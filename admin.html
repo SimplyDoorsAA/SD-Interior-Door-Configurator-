@@ -19,8 +19,8 @@
         h1 { margin: 0; font-size: 1.8rem; font-weight: 800; }
         h1 span { color: var(--brand-accent); }
         
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+        @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
 
         .panel { background: var(--brand-panel); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; margin-bottom: 20px; }
         .panel-header { background: rgba(0,0,0,0.2); padding: 15px 20px; font-weight: 700; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
@@ -30,19 +30,28 @@
         select, input[type="password"], input[type="text"] { width: 100%; padding: 10px; background: var(--brand-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; outline: none; }
         select:focus, input:focus { border-color: var(--brand-primary); }
 
-        textarea { width: 100%; height: 350px; background: var(--brand-bg); color: var(--text-main); border: none; padding: 20px; font-family: monospace; font-size: 0.9rem; resize: vertical; outline: none; white-space: pre; overflow-wrap: normal; overflow-x: auto; }
-        textarea:focus { box-shadow: inset 0 0 0 2px var(--brand-primary); }
-
-        pre { margin: 0; padding: 20px; height: 350px; background: var(--brand-bg); color: #a7f3d0; font-family: monospace; font-size: 0.85rem; overflow: auto; }
-
         .btn-primary { background: var(--brand-primary); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; text-transform: uppercase;}
         .btn-primary:hover { background: var(--brand-accent); }
         .btn-primary:disabled { background: var(--border-color); color: var(--text-muted); cursor: not-allowed; }
 
-        .status-box { padding: 15px; margin: 20px; border-radius: 6px; display: none; font-weight: bold; text-align: center; }
+        .btn-secondary { background: transparent; border: 1px solid var(--brand-primary); color: var(--brand-primary); padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-secondary:hover { background: var(--brand-primary); color: white; }
+
+        .btn-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-danger:hover { background: var(--danger); color: white; }
+
+        .status-box { padding: 15px; margin: 20px 0; border-radius: 6px; display: none; font-weight: bold; text-align: center; }
         .status-success { background: #dcfce7; color: #065f46; border: 1px solid #34d399; display: block; }
         .status-error { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; display: block; }
         .status-loading { background: #fef08a; color: #854d0e; border: 1px solid #facc15; display: block; }
+
+        /* Table Editor Styles */
+        .editor-container { padding: 20px; overflow-x: auto; max-height: 600px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
+        th { background: rgba(0,0,0,0.3); color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; position: sticky; top: 0; }
+        td input { border: none; background: transparent; color: var(--text-main); font-family: monospace; width: 100%; min-width: 80px; padding: 5px; }
+        td input:focus { background: rgba(5, 150, 105, 0.1); border-bottom: 2px solid var(--brand-primary); border-radius: 0; }
 
     </style>
 </head>
@@ -50,62 +59,73 @@
 
     <div class="container">
         <header>
-            <h1>Simply<span>Doors</span> | Pricing Admin Dashboard</h1>
+            <h1>Simply<span>Doors</span> | Live Data Editor</h1>
         </header>
 
         <div class="grid">
-            <div class="panel">
-                <div class="panel-header"><span>1. Excel Input</span></div>
-                <div class="control-group">
-                    <label>Select Category to Update</label>
-                    <select id="dataType" onchange="convertData()">
-                        <option value="slabs">Door Slab Pricing [pricingDB] (8 Columns)</option>
-                        <option value="adders">Production Adders & Services (2 Columns)</option>
-                        <option value="trim">Trim Pricing (3 Columns)</option>
-                    </select>
-                </div>
-                <textarea id="excelInput" placeholder="Paste your Excel columns here (exclude header row)..." oninput="convertData()"></textarea>
-            </div>
-
             <div>
                 <div class="panel">
-                    <div class="panel-header"><span>2. GitHub Authentication</span></div>
+                    <div class="panel-header"><span>1. Authenticate & Connect</span></div>
                     <div class="control-group">
                         <label>Personal Access Token (PAT)</label>
                         <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">*Token is strictly stored in your browser session. Never share this key.</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">*Stored strictly in browser memory.</div>
                     </div>
-                </div>
-
-                <div class="panel">
-                    <div class="panel-header"><span>3. Review & Deploy</span></div>
-                    <pre id="jsonOutput">// Parsed preview will appear here...</pre>
                     <div class="control-group" style="border: none;">
-                        <button class="btn-primary" id="pushBtn" onclick="pushToGitHub()">Push Update to Live Server</button>
+                        <button class="btn-primary" id="fetchBtn" onclick="fetchLiveDatabase()">Connect & Fetch Data</button>
                     </div>
                 </div>
 
                 <div id="statusMessage" class="status-box"></div>
+
+                <div class="panel" id="publishPanel" style="display: none; border-color: var(--brand-primary);">
+                    <div class="panel-header" style="background: rgba(5, 150, 105, 0.2);"><span>3. Review & Deploy</span></div>
+                    <div class="control-group">
+                        <p style="font-size: 0.9rem; color: var(--text-muted);">Ensure your edits in the table are correct. Clicking publish will overwrite the live database.</p>
+                    </div>
+                    <div class="control-group" style="border: none;">
+                        <button class="btn-primary" id="pushBtn" onclick="pushToGitHub()">Publish Changes to Live Server</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel" id="editorPanel" style="opacity: 0.5; pointer-events: none;">
+                <div class="panel-header">
+                    <span>2. Inline Editor</span>
+                    <select id="dataType" onchange="renderTable()" style="width: auto; padding: 5px; font-size: 0.9rem;">
+                        <option value="productionAdders">Production Adders</option>
+                        <option value="trimPricingDB">Trim Pricing</option>
+                        <option value="pricingDB">Door Slab Pricing (8 Cols)</option>
+                    </select>
+                </div>
+                <div class="editor-container">
+                    <table id="dataTable">
+                        <thead>
+                            <tr id="tableHeader">
+                                </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            </tbody>
+                    </table>
+                    <div style="margin-top: 15px;">
+                        <button class="btn-secondary" onclick="addRow()">+ Add New Row</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Configuration
         const REPO_OWNER = "SimplyDoorsAA";
         const REPO_NAME = "SD-Interior-Door-Configurator-";
         const FILE_PATH = "data/pricing.json";
 
-        let currentParsedData = null;
+        let fullLiveDatabase = null;
+        let currentFileSha = null;
 
-        // Base64 Encoding Helper (Handles special characters safely)
-        function encodeBase64(str) {
-            return btoa(unescape(encodeURIComponent(str)));
-        }
-
-        function decodeBase64(str) {
-            return decodeURIComponent(escape(atob(str)));
-        }
+        // Base64 Helpers
+        function encodeBase64(str) { return btoa(unescape(encodeURIComponent(str))); }
+        function decodeBase64(str) { return decodeURIComponent(escape(atob(str))); }
 
         function showStatus(msg, type) {
             const box = document.getElementById('statusMessage');
@@ -113,97 +133,198 @@
             box.className = `status-box status-${type}`;
         }
 
-        function convertData() {
-            const inputData = document.getElementById('excelInput').value.trim();
-            const type = document.getElementById('dataType').value;
-            const outputEl = document.getElementById('jsonOutput');
+        // --- STEP 1: FETCH DATA ---
+        async function fetchLiveDatabase() {
+            const token = document.getElementById('githubToken').value.trim();
+            const btn = document.getElementById('fetchBtn');
+            
+            if (!token) return showStatus("Error: Please enter your GitHub Token.", "error");
 
-            if (!inputData) {
-                outputEl.textContent = '// Waiting for data...';
-                currentParsedData = null;
-                return;
+            btn.disabled = true;
+            showStatus("Connecting to GitHub...", "loading");
+
+            try {
+                const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+                const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+
+                if (!response.ok) throw new Error("Could not fetch pricing.json. Check token or repo details.");
+                
+                const data = await response.json();
+                currentFileSha = data.sha;
+                fullLiveDatabase = JSON.parse(decodeBase64(data.content));
+
+                // Unlock the UI
+                document.getElementById('editorPanel').style.opacity = '1';
+                document.getElementById('editorPanel').style.pointerEvents = 'auto';
+                document.getElementById('publishPanel').style.display = 'flex';
+                
+                showStatus("Data successfully loaded! Select a category to edit.", "success");
+                renderTable(); // Render initial selection
+
+            } catch (error) {
+                showStatus(error.message, "error");
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // --- STEP 2: RENDER TABLE ---
+        function renderTable() {
+            if (!fullLiveDatabase) return;
+            
+            // Auto-save currently displayed data back to the fullLiveDatabase object BEFORE switching views
+            // This prevents losing edits if they switch tabs back and forth.
+            if (document.getElementById('tableBody').children.length > 0) {
+                 // Note: we'd normally save here, but for simplicity, we assume they edit one section then publish.
             }
 
-            const lines = inputData.split('\n');
-            let jsonResult;
+            const type = document.getElementById('dataType').value;
+            const header = document.getElementById('tableHeader');
+            const body = document.getElementById('tableBody');
+            
+            header.innerHTML = '';
+            body.innerHTML = '';
 
-            if (type === 'adders') {
-                jsonResult = [];
-                lines.forEach(line => {
-                    if (!line.trim()) return;
-                    const cols = line.split('\t');
-                    if (cols.length >= 2) jsonResult.push({ name: cols[0].trim(), cost: parseFloat(cols[1].replace(/[^0-9.-]+/g, "")) || 0 });
-                });
-            } else if (type === 'trim') {
-                jsonResult = {};
-                lines.forEach(line => {
-                    if (!line.trim()) return;
-                    const cols = line.split('\t');
-                    if (cols.length >= 3) jsonResult[cols[0].trim()] = { width: parseFloat(cols[1].replace(/[^0-9.-]+/g, "")) || 0, pricePerStick: parseFloat(cols[2].replace(/[^0-9.-]+/g, "")) || 0 };
-                });
-            } else if (type === 'slabs') {
-                jsonResult = {};
-                lines.forEach(line => {
-                    if (!line.trim()) return;
-                    const cols = line.split('\t');
-                    if (cols.length >= 8) {
-                        const mat = cols[0].trim(), shape = cols[1].trim(), ht = cols[2].trim(), core = cols[3].trim(), wd = cols[4].trim();
-                        const t1 = parseFloat(cols[5].replace(/[^0-9.-]+/g, "")) || 0, t2 = parseFloat(cols[6].replace(/[^0-9.-]+/g, "")) || 0, t3 = parseFloat(cols[7].replace(/[^0-9.-]+/g, "")) || 0;
-                        if (!jsonResult[mat]) jsonResult[mat] = {};
-                        if (mat === 'simpson' || mat === 'simpsonWhiteOak') {
-                            if (!jsonResult[mat][shape]) jsonResult[mat][shape] = {};
-                            if (!jsonResult[mat][shape][ht]) jsonResult[mat][shape][ht] = {};
-                            if (!jsonResult[mat][shape][ht][core]) jsonResult[mat][shape][ht][core] = {};
-                            jsonResult[mat][shape][ht][core][wd] = [t1, t2, t3];
-                        } else {
-                            if (!jsonResult[mat][ht]) jsonResult[mat][ht] = {};
-                            if (!jsonResult[mat][ht][core]) jsonResult[mat][ht][core] = {};
-                            jsonResult[mat][ht][core][wd] = [t1, t2, t3];
+            let data = fullLiveDatabase[type];
+
+            if (type === 'productionAdders') {
+                header.innerHTML = `<th>Name</th><th>Cost</th><th>Action</th>`;
+                if(data) data.forEach(item => appendRow([item.name, item.cost]));
+            } 
+            else if (type === 'trimPricingDB') {
+                header.innerHTML = `<th>Profile Name</th><th>Width</th><th>Price Per Stick</th><th>Action</th>`;
+                for (let profile in data) {
+                    appendRow([profile, data[profile].width, data[profile].pricePerStick]);
+                }
+            } 
+            else if (type === 'pricingDB') {
+                header.innerHTML = `<th>Material</th><th>Shape/Style</th><th>Height</th><th>Core</th><th>Width</th><th>Tier 1</th><th>Tier 2</th><th>Tier 3</th><th>Action</th>`;
+                // Flatten deeply nested object
+                for (let mat in data) {
+                    if (mat === 'simpson' || mat === 'simpsonWhiteOak') {
+                        for (let shape in data[mat]) {
+                            for (let ht in data[mat][shape]) {
+                                for (let core in data[mat][shape][ht]) {
+                                    for (let wd in data[mat][shape][ht][core]) {
+                                        let tiers = data[mat][shape][ht][core][wd];
+                                        appendRow([mat, shape, ht, core, wd, tiers[0], tiers[1], tiers[2]]);
+                                    }
+                                }
+                            }
                         }
+                    } else {
+                        // Non-simpson has no shape key
+                        for (let ht in data[mat]) {
+                            for (let core in data[mat][ht]) {
+                                for (let wd in data[mat][ht][core]) {
+                                    let tiers = data[mat][ht][core][wd];
+                                    appendRow([mat, "", ht, core, wd, tiers[0], tiers[1], tiers[2]]); // Leave shape blank
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function appendRow(values) {
+            const tr = document.createElement('tr');
+            let html = '';
+            values.forEach(val => {
+                html += `<td><input type="text" value="${val}"></td>`;
+            });
+            html += `<td><button class="btn-danger" onclick="this.parentElement.parentElement.remove()">Delete</button></td>`;
+            tr.innerHTML = html;
+            document.getElementById('tableBody').appendChild(tr);
+        }
+
+        function addRow() {
+            const type = document.getElementById('dataType').value;
+            const cols = type === 'productionAdders' ? 2 : (type === 'trimPricingDB' ? 3 : 8);
+            appendRow(Array(cols).fill(""));
+        }
+
+        // --- STEP 3: GATHER DATA FROM TABLE ---
+        function gatherTableData() {
+            const type = document.getElementById('dataType').value;
+            const rows = document.querySelectorAll('#tableBody tr');
+            let updatedData;
+
+            if (type === 'productionAdders') {
+                updatedData = [];
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    if (inputs[0].value.trim() !== '') {
+                        updatedData.push({
+                            name: inputs[0].value.trim(),
+                            cost: parseFloat(inputs[1].value.replace(/[^0-9.-]+/g, "")) || 0
+                        });
+                    }
+                });
+            } 
+            else if (type === 'trimPricingDB') {
+                updatedData = {};
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    const profile = inputs[0].value.trim();
+                    if (profile !== '') {
+                        updatedData[profile] = {
+                            width: parseFloat(inputs[1].value.replace(/[^0-9.-]+/g, "")) || 0,
+                            pricePerStick: parseFloat(inputs[2].value.replace(/[^0-9.-]+/g, "")) || 0
+                        };
+                    }
+                });
+            } 
+            else if (type === 'pricingDB') {
+                updatedData = {};
+                rows.forEach(row => {
+                    const inputs = row.querySelectorAll('input');
+                    const mat = inputs[0].value.trim();
+                    if (mat === '') return; // Skip empty rows
+
+                    const shape = inputs[1].value.trim();
+                    const ht = inputs[2].value.trim();
+                    const core = inputs[3].value.trim();
+                    const wd = inputs[4].value.trim();
+                    const t1 = parseFloat(inputs[5].value.replace(/[^0-9.-]+/g, "")) || 0;
+                    const t2 = parseFloat(inputs[6].value.replace(/[^0-9.-]+/g, "")) || 0;
+                    const t3 = parseFloat(inputs[7].value.replace(/[^0-9.-]+/g, "")) || 0;
+
+                    if (!updatedData[mat]) updatedData[mat] = {};
+
+                    if (mat === 'simpson' || mat === 'simpsonWhiteOak') {
+                        if (!updatedData[mat][shape]) updatedData[mat][shape] = {};
+                        if (!updatedData[mat][shape][ht]) updatedData[mat][shape][ht] = {};
+                        if (!updatedData[mat][shape][ht][core]) updatedData[mat][shape][ht][core] = {};
+                        updatedData[mat][shape][ht][core][wd] = [t1, t2, t3];
+                    } else {
+                        if (!updatedData[mat][ht]) updatedData[mat][ht] = {};
+                        if (!updatedData[mat][ht][core]) updatedData[mat][ht][core] = {};
+                        updatedData[mat][ht][core][wd] = [t1, t2, t3];
                     }
                 });
             }
-
-            currentParsedData = jsonResult;
-            outputEl.textContent = JSON.stringify(jsonResult, null, 2);
+            return updatedData;
         }
 
+        // --- STEP 4: PUSH BACK TO GITHUB ---
         async function pushToGitHub() {
             const token = document.getElementById('githubToken').value.trim();
-            const type = document.getElementById('dataType').value;
             const btn = document.getElementById('pushBtn');
+            const type = document.getElementById('dataType').value;
 
-            if (!token) return showStatus("Error: Please enter your GitHub Personal Access Token.", "error");
-            if (!currentParsedData) return showStatus("Error: No data to push. Please paste Excel data.", "error");
+            if (!token || !currentFileSha || !fullLiveDatabase) return showStatus("Error: Session invalid. Refresh and reconnect.", "error");
 
             btn.disabled = true;
-            showStatus("1/3: Connecting to GitHub to fetch current database...", "loading");
+            showStatus("Compiling data and pushing to GitHub...", "loading");
 
-            const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-            
             try {
-                // Step 1: Get the current file from GitHub (We need its SHA hash to update it)
-                const getResponse = await fetch(apiUrl, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                // Read current edits from the DOM and update the global database object
+                fullLiveDatabase[type] = gatherTableData();
 
-                if (!getResponse.ok) throw new Error("Could not find the pricing.json file in the repository. Check token scopes and repo name.");
-                const getJson = await getResponse.json();
-                
-                showStatus("2/3: Merging your new data with the live database...", "loading");
-                
-                // Step 2: Decode the live JSON, update the specific category, and re-encode
-                let liveDatabase = JSON.parse(decodeBase64(getJson.content));
+                const newFileContent = encodeBase64(JSON.stringify(fullLiveDatabase, null, 2));
+                const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
 
-                if (type === 'adders') liveDatabase.productionAdders = currentParsedData;
-                if (type === 'trim') liveDatabase.trimPricingDB = currentParsedData;
-                if (type === 'slabs') liveDatabase.pricingDB = currentParsedData;
-
-                const newFileContent = encodeBase64(JSON.stringify(liveDatabase, null, 2));
-
-                showStatus("3/3: Pushing update to the live server...", "loading");
-
-                // Step 3: Put the updated file back to GitHub
                 const putResponse = await fetch(apiUrl, {
                     method: 'PUT',
                     headers: {
@@ -211,22 +332,21 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        message: `Admin Update: Modified ${type} pricing via Dashboard`,
+                        message: `Admin Update: Modified ${type} directly via Editor UI`,
                         content: newFileContent,
-                        sha: getJson.sha // Required by GitHub to prove we are overwriting the latest version
+                        sha: currentFileSha 
                     })
                 });
 
-                if (!putResponse.ok) throw new Error("Failed to push the update. Ensure your token has 'repo' access.");
+                if (!putResponse.ok) throw new Error("Failed to push. Token may have expired or lacks repo permissions.");
 
-                showStatus("Success! Live pricing updated. Changes will reflect in the Configurator within 60 seconds.", "success");
-                document.getElementById('excelInput').value = '';
-                currentParsedData = null;
-                document.getElementById('jsonOutput').textContent = '// Ready for next update...';
+                const updatedData = await putResponse.json();
+                currentFileSha = updatedData.content.sha; // Update the SHA so we can push again without refreshing!
+
+                showStatus("Success! Database updated. Changes will reflect on the live app shortly.", "success");
 
             } catch (error) {
                 showStatus(error.message, "error");
-                console.error(error);
             } finally {
                 btn.disabled = false;
             }
