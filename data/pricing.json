@@ -2429,5 +2429,15 @@
       "name": "Testing",
       "cost": 100
     }
-  ]
+  ],
+  "systemConstants": {
+    "trimLaborCut": 99,
+    "trimLaborApplied": 15,
+    "whiteOakJamb4": 94.1,
+    "whiteOakJamb6": 126.9,
+    "whiteOakHingeUpcharge": 12.98,
+    "doubleHardware68": 30.87,
+    "doubleHardware80RHA": 42.13,
+    "doubleHardware80LHA": 35.26
+  }
 }
