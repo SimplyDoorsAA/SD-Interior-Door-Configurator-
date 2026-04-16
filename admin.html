@@ -50,6 +50,8 @@
         th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
         th { background: rgba(0,0,0,0.3); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; position: sticky; top: 0; z-index: 10; }
         td input { border: none; background: transparent; color: var(--text-main); font-family: monospace; width: 100%; padding: 5px; outline: none; }
+        td input:focus { background: rgba(5, 150, 105, 0.15); }
+        tr:hover { background: rgba(255,255,255,0.02); }
     </style>
 </head>
 <body>
@@ -78,10 +80,11 @@
             <main class="panel" id="editorPanel" style="opacity: 0.3; pointer-events: none;">
                 <div class="panel-header">
                     <span>Editor</span>
-                    <select id="dataType" onchange="renderTable()">
+                    <select id="dataType" onchange="renderTable()" style="padding: 5px; font-size: 0.9rem;">
                         <option value="pricingDB">Door Slabs (Main DB)</option>
                         <option value="productionAdders">Production Adders</option>
                         <option value="trimPricingDB">Trim Pricing</option>
+                        <option value="systemConstants">System Constants (Trim Labor, WO Jambs, etc)</option>
                     </select>
                 </div>
                 <div class="editor-container">
@@ -90,7 +93,10 @@
                         <tbody id="tableBody"></tbody>
                     </table>
                 </div>
-                <div style="padding: 15px;"><button class="btn-secondary" onclick="addRow()">+ Add New Row</button></div>
+                <div style="padding: 15px; display: flex; align-items: center;">
+                    <button class="btn-secondary" onclick="addRow()">+ Add New Row</button>
+                    <button id="seedAddersBtn" class="btn-secondary" style="display:none; margin-left:15px; border-color: var(--brand-accent); color: var(--brand-accent);" onclick="seedDefaultAdders()">✨ Auto-Fill Missing Adders</button>
+                </div>
             </main>
         </div>
     </div>
@@ -114,6 +120,7 @@
             try {
                 const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
                 const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error("Connection failed. Check your token.");
                 const data = await res.json();
                 currentFileSha = data.sha;
                 fullLiveDatabase = JSON.parse(decodeURIComponent(escape(atob(data.content))));
@@ -130,34 +137,60 @@
             const head = document.getElementById('tableHeader');
             const body = document.getElementById('tableBody');
             head.innerHTML = ''; body.innerHTML = '';
-            const db = fullLiveDatabase[type];
+            
+            // Toggle Auto-Fill button visibility
+            document.getElementById('seedAddersBtn').style.display = (type === 'productionAdders') ? 'inline-block' : 'none';
 
-            if (type === 'productionAdders') {
-                head.innerHTML = `<tr><th>Service</th><th>Cost</th><th>Action</th></tr>`;
-                db.forEach(a => appendRow([a.name, a.cost]));
+            let db = fullLiveDatabase[type];
+
+            if (type === 'systemConstants') {
+                head.innerHTML = `<tr><th>Constant Name (Code Key)</th><th>Value ($)</th><th>Action</th></tr>`;
+                // If systemConstants doesn't exist yet, seed it with the hardcoded values found in your Configurator
+                if (!db || Object.keys(db).length === 0) {
+                    fullLiveDatabase['systemConstants'] = {
+                        "trimLaborCut": 7.00,
+                        "trimLaborApplied": 15.00,
+                        "whiteOakJamb4": 94.10,
+                        "whiteOakJamb6": 126.90,
+                        "whiteOakHingeUpcharge": 12.98,
+                        "doubleHardware68": 30.87,
+                        "doubleHardware80RHA": 42.13,
+                        "doubleHardware80LHA": 35.26
+                    };
+                    db = fullLiveDatabase['systemConstants'];
+                }
+                for (let k in db) appendRow([k, db[k]]);
+                
+            } else if (type === 'productionAdders') {
+                head.innerHTML = `<tr><th>Service Name</th><th>Cost ($)</th><th>Action</th></tr>`;
+                if (db) db.forEach(a => appendRow([a.name, a.cost]));
+                
             } else if (type === 'trimPricingDB') {
-                head.innerHTML = `<tr><th>Profile</th><th>Width</th><th>Price</th><th>Action</th></tr>`;
-                for (let k in db) appendRow([k, db[k].width, db[k].pricePerStick]);
+                head.innerHTML = `<tr><th>Profile Name</th><th>Width (In)</th><th>Price / Stick ($)</th><th>Action</th></tr>`;
+                if (db) for (let k in db) appendRow([k, db[k].width, db[k].pricePerStick]);
+                
             } else if (type === 'pricingDB') {
                 head.innerHTML = `<tr><th>Material</th><th>Shape</th><th>Height</th><th>Core</th><th>Width</th><th>Tier 1</th><th>Tier 2</th><th>Tier 3</th><th>Action</th></tr>`;
-                for (let mat in db) {
-                    if (mat.includes('simpson')) {
-                        for (let sh in db[mat]) {
-                            for (let ht in db[mat][sh]) {
-                                for (let cr in db[mat][sh][ht]) {
-                                    for (let wd in db[mat][sh][ht][cr]) {
-                                        let t = db[mat][sh][ht][cr][wd];
-                                        appendRow([mat, sh, ht, cr, wd, t[0], t[1], t[2]]);
+                if (db) {
+                    for (let mat in db) {
+                        if (mat.includes('simpson')) {
+                            for (let sh in db[mat]) {
+                                for (let ht in db[mat][sh]) {
+                                    for (let cr in db[mat][sh][ht]) {
+                                        for (let wd in db[mat][sh][ht][cr]) {
+                                            let t = db[mat][sh][ht][cr][wd];
+                                            appendRow([mat, sh, ht, cr, wd, t[0], t[1], t[2]]);
+                                        }
                                     }
                                 }
                             }
-                        }
-                    } else {
-                        for (let ht in db[mat]) {
-                            for (let cr in db[mat][ht]) {
-                                for (let wd in db[mat][ht][cr]) {
-                                    let t = db[mat][ht][cr][wd];
-                                    appendRow([mat, "", ht, cr, wd, t[0], t[1], t[2]]);
+                        } else {
+                            for (let ht in db[mat]) {
+                                for (let cr in db[mat][ht]) {
+                                    for (let wd in db[mat][ht][cr]) {
+                                        let t = db[mat][ht][cr][wd];
+                                        appendRow([mat, "", ht, cr, wd, t[0], t[1], t[2]]);
+                                    }
                                 }
                             }
                         }
@@ -174,14 +207,57 @@
 
         function addRow() {
             const type = document.getElementById('dataType').value;
-            const count = type === 'productionAdders' ? 2 : (type === 'trimPricingDB' ? 3 : 8);
+            const count = type === 'productionAdders' || type === 'systemConstants' ? 2 : (type === 'trimPricingDB' ? 3 : 8);
             appendRow(Array(count).fill(""));
+        }
+
+        function seedDefaultAdders() {
+            const defaults = [
+                { name: "Prehang 6'8 Single (Std 4-9/16)", cost: 25.00 },
+                { name: "Prehang 8'0 Single (Std 4-9/16)", cost: 32.00 },
+                { name: "Upcharge to Interior 6-9/16 Jamb", cost: 20.00 },
+                { name: "Prehang 6'8 Double Ball Catch", cost: 55.00 },
+                { name: "Prehang 6'8 Double Flush Bolt", cost: 85.00 },
+                { name: "Prehang 8'0 Double Flush Bolt", cost: 95.00 },
+                { name: "Prehang 8'0 Double Ball Catch", cost: 50.00 },
+                { name: "Upcharge to Primed FJ Jamb", cost: 5.00 },
+                { name: "Slab Cutdown", cost: 10.00 },
+                { name: "Hinge Prep (Per Slab)", cost: 30.00 },
+                { name: "Bore Prep (Per Slab)", cost: 20.00 }
+            ];
+            
+            if (!fullLiveDatabase['productionAdders']) fullLiveDatabase['productionAdders'] = [];
+            
+            let addedCount = 0;
+            defaults.forEach(def => {
+                // Check if it already exists to prevent duplicates
+                const exists = fullLiveDatabase['productionAdders'].find(a => a.name === def.name);
+                if (!exists) {
+                    fullLiveDatabase['productionAdders'].push(def);
+                    addedCount++;
+                }
+            });
+            
+            if (addedCount > 0) {
+                showStatus(`Added ${addedCount} missing adders! Click Publish to save them to the live database.`, "success");
+                renderTable();
+            } else {
+                showStatus("All default adders are already present in the table.", "success");
+            }
         }
 
         function collect() {
             const type = document.getElementById('dataType').value;
             const rows = document.querySelectorAll('#tableBody tr');
-            if (type === 'productionAdders') {
+            
+            if (type === 'systemConstants') {
+                let obj = {};
+                rows.forEach(r => {
+                    const i = r.querySelectorAll('input');
+                    if (i[0].value.trim()) obj[i[0].value.trim()] = parseFloat(i[1].value) || 0;
+                });
+                return obj;
+            } else if (type === 'productionAdders') {
                 return Array.from(rows).map(r => {
                     const i = r.querySelectorAll('input');
                     return { name: i[0].value, cost: parseFloat(i[1].value) || 0 };
@@ -190,14 +266,14 @@
                 let obj = {};
                 rows.forEach(r => {
                     const i = r.querySelectorAll('input');
-                    if (i[0].value) obj[i[0].value] = { width: parseFloat(i[1].value) || 0, pricePerStick: parseFloat(i[2].value) || 0 };
+                    if (i[0].value.trim()) obj[i[0].value.trim()] = { width: parseFloat(i[1].value) || 0, pricePerStick: parseFloat(i[2].value) || 0 };
                 });
                 return obj;
             } else {
                 let obj = {};
                 rows.forEach(r => {
                     const i = r.querySelectorAll('input');
-                    const [mat, sh, ht, cr, wd, t1, t2, t3] = Array.from(i).map(x => x.value);
+                    const [mat, sh, ht, cr, wd, t1, t2, t3] = Array.from(i).map(x => x.value.trim());
                     if (!mat || !ht || !wd) return;
                     if (!obj[mat]) obj[mat] = {};
                     if (mat.includes('simpson')) {
@@ -229,9 +305,10 @@
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: `Admin: Update ${type}`, content, sha: currentFileSha })
                 });
+                if (!res.ok) throw new Error("Push failed. Check repository permissions.");
                 const result = await res.json();
                 currentFileSha = result.content.sha;
-                showStatus("Success!", "success");
+                showStatus("Success! Live Pricing Updated.", "success");
             } catch (e) { showStatus(e.message, "error"); }
             btn.disabled = false;
         }
