@@ -2423,7 +2423,7 @@
   "productionAdders": [
     {
       "name": "Slab Cutdown",
-      "cost": 58
+      "cost": 10
     },
     {
       "name": "Prehang 6'8 Single (Std 4-9/16)",
@@ -2463,7 +2463,7 @@
     },
     {
       "name": "Bore Prep (Per Slab)",
-      "cost": 99
+      "cost": 20
     }
   ],
   "systemConstants": {
