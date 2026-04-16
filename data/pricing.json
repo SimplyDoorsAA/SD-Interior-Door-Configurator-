@@ -2426,10 +2426,6 @@
       "cost": 58
     },
     {
-      "name": "Testing",
-      "cost": 100
-    },
-    {
       "name": "Prehang 6'8 Single (Std 4-9/16)",
       "cost": 25
     },
@@ -2467,7 +2463,7 @@
     },
     {
       "name": "Bore Prep (Per Slab)",
-      "cost": 20
+      "cost": 99
     }
   ],
   "systemConstants": {
