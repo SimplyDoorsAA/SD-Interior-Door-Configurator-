@@ -150,7 +150,7 @@
         .btn-copy { background: #f1f5f9; border: 1px solid #cbd5e1; color: var(--text-main); padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.5px;}
         .btn-copy:hover { background: #e2e8f0; }
         .btn-copy.copied { background: var(--brand-primary); color: white; border-color: var(--brand-accent); }
-        .btn-copy-all { background: var(--brand-primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; cursor: transition: 0.2s; }
+        .btn-copy-all { background: var(--brand-primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-copy-all:hover { background: var(--brand-accent); }
 
         @media (max-width: 1200px) {
@@ -832,27 +832,37 @@
         const singleWidthsList = ["1'0\"", "1'2\"", "1'3\"", "1'4\"", "1'6\"", "1'8\"", "1'10\"", "2'0\"", "2'2\"", "2'4\"", "2'6\"", "2'8\"", "2'10\"", "3'0\""];
         const bifoldWidthsList = ["1'6\"", "2'0\"", "2'4\"", "2'6\"", "2'8\"", "3'0\"", "4'0\"", "5'0\"", "6'0\""];
 
-        // Set up empty global variables to hold our data
-        let rawStevesMatrix, stevesMatrix, pricingDB, trimPricingDB, productionAdders;
+        // Added systemConstants to global variables
+        let rawStevesMatrix, stevesMatrix, pricingDB, trimPricingDB, productionAdders, systemConstants;
 
         // The Fetch Engine
         async function initializeApplication() {
             try {
-                // 1. Fetch the JSON file with cache-busting timestamp
                 const response = await fetch(`data/pricing.json?v=${new Date().getTime()}`);
                 
                 if (!response.ok) throw new Error("Failed to load pricing database.");
                 
-                // 2. Parse the JSON into JavaScript objects
                 const data = await response.json();
 
-                // 3. Assign the data to our global variables
+                // Assign the data to our global variables
                 rawStevesMatrix = data.rawStevesMatrix;
                 pricingDB = data.pricingDB;
                 trimPricingDB = data.trimPricingDB;
                 productionAdders = data.productionAdders;
+                
+                // Set systemConstants, with a fallback just in case the file hasn't updated yet
+                systemConstants = data.systemConstants || {
+                    trimLaborCut: 7.00,
+                    trimLaborApplied: 15.00,
+                    whiteOakJamb4: 94.10,
+                    whiteOakJamb6: 126.90,
+                    whiteOakHingeUpcharge: 12.98,
+                    doubleHardware68: 30.87,
+                    doubleHardware80RHA: 42.13,
+                    doubleHardware80LHA: 35.26
+                };
 
-                // 4. Build the parsed stevesMatrix for the UI logic
+                // Build the parsed stevesMatrix for the UI logic
                 stevesMatrix = {};
                 Object.entries(rawStevesMatrix).forEach(([shape, heights]) => {
                     stevesMatrix[shape] = {};
@@ -862,7 +872,7 @@
                     });
                 });
 
-                // 5. Data is loaded! Now we can safely initialize the UI
+                // Data is loaded! Initialize the UI
                 initAdders();
                 resetConfigurator();
                 loadTally();
@@ -870,7 +880,6 @@
             } catch (error) {
                 console.error("Initialization Error:", error);
                 document.getElementById('sidebarItemsList').innerHTML = `<div style="text-align: center; color: #991b1b; padding: 20px 0; font-size: 0.9rem; font-weight: bold;">Error loading pricing database.</div>`;
-                alert("Critical Error: Could not connect to the pricing database. Please check your internet connection and refresh.");
             }
         }
 
@@ -1090,7 +1099,7 @@
             }
 
             if (isDouble) {
-                if (DOM_CACHE.ballCatchWrapper) DOM_CACHE.ballCatchWrapper.classList.toggle('hidden', appState.handing !== 'No Hand');
+                if (DOM_CACHE.ballCatchWrapper) DOM_CACHE.ballCatchWrapper.classList.toggle('hidden', appState.handing === 'No Hand');
                 if (DOM_CACHE.flushBolt68Wrapper) DOM_CACHE.flushBolt68Wrapper.classList.toggle('hidden', appState.handing === 'No Hand' || appState.height !== '68');
                 if (DOM_CACHE.flushBolt80Wrapper) DOM_CACHE.flushBolt80Wrapper.classList.toggle('hidden', appState.handing === 'No Hand' || appState.height === '68');
             }
@@ -1210,14 +1219,16 @@
             let hwCost = 0;
             if (config.mode === 'misc') return hwCost;
 
+            // Updated to use System Constants
             if (config.jambFinish === 'white_oak' && config.mode !== 'slab_only') {
-                let pairCost = config.jambSize === '6-9/16"' ? 126.90 : 94.10;
-                hwCost += ((config.mode === 'double') ? (pairCost * 1.5) : pairCost) + (12.98 * ((config.mode === 'double') ? 4 : 3));
+                let pairCost = config.jambSize === '6-9/16"' ? systemConstants.whiteOakJamb6 : systemConstants.whiteOakJamb4;
+                hwCost += ((config.mode === 'double') ? (pairCost * 1.5) : pairCost) + (systemConstants.whiteOakHingeUpcharge * ((config.mode === 'double') ? 4 : 3));
             }
 
+            // Updated to use System Constants
             if (config.mode === 'double' && config.material !== 'Custom') {
                 if (config.handing === 'No Hand') hwCost += parseFloat((config.ballCatch || "0|").split('|')[0] || 0);
-                else hwCost += parseFloat((config.height === '68' ? (config.flushBolt68 || "0|") : (config.flushBolt80 || "0|")).split('|')[0] || 0) + (config.height === '68' ? 30.87 : (config.handing === 'RHA' ? 42.13 : 35.26));
+                else hwCost += parseFloat((config.height === '68' ? (config.flushBolt68 || "0|") : (config.flushBolt80 || "0|")).split('|')[0] || 0) + (config.height === '68' ? systemConstants.doubleHardware68 : (config.handing === 'RHA' ? systemConstants.doubleHardware80RHA : systemConstants.doubleHardware80LHA));
             }
             return hwCost;
         }
@@ -1231,8 +1242,9 @@
             const trimSticks = Math.ceil((totalInches * 1.10) / 168); 
             
             let trimLab = 0;
-            if (config.trimApplication === 'cut') trimLab = 7.00;
-            else if (config.trimApplication === 'applied') trimLab = 15.00;
+            // Updated to use System Constants
+            if (config.trimApplication === 'cut') trimLab = systemConstants.trimLaborCut;
+            else if (config.trimApplication === 'applied') trimLab = systemConstants.trimLaborApplied;
 
             return { mat: (trimSticks * tData.pricePerStick) / qty, lab: trimLab, sticks: trimSticks };
         }
