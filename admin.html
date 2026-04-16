@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SimplyDoors | Pricing Admin Dashboard</title>
+    <title>SimplyDoors | Live Pricing Admin</title>
     <style>
         :root {
             --brand-bg: #0f172a; --brand-panel: #1e293b;
@@ -14,12 +14,12 @@
 
         * { box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--brand-bg); color: var(--text-main); margin: 0; padding: 20px; line-height: 1.6; }
-        .container { max-width: 1400px; margin: 0 auto; }
+        .container { max-width: 1600px; margin: 0 auto; }
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--brand-primary); padding-bottom: 20px; margin-bottom: 30px; }
         h1 { margin: 0; font-size: 1.8rem; font-weight: 800; }
         h1 span { color: var(--brand-accent); }
         
-        .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+        .grid { display: grid; grid-template-columns: 350px 1fr; gap: 30px; }
         @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
 
         .panel { background: var(--brand-panel); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; margin-bottom: 20px; }
@@ -40,78 +40,75 @@
         .btn-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 5px 10px; border-radius: 4px; cursor: pointer; }
         .btn-danger:hover { background: var(--danger); color: white; }
 
-        .status-box { padding: 15px; margin: 20px 0; border-radius: 6px; display: none; font-weight: bold; text-align: center; }
+        .status-box { padding: 15px; margin: 20px 0; border-radius: 6px; display: none; font-weight: bold; text-align: center; font-size: 0.9rem; }
         .status-success { background: #dcfce7; color: #065f46; border: 1px solid #34d399; display: block; }
         .status-error { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; display: block; }
         .status-loading { background: #fef08a; color: #854d0e; border: 1px solid #facc15; display: block; }
 
         /* Table Editor Styles */
-        .editor-container { padding: 20px; overflow-x: auto; max-height: 600px; overflow-y: auto; }
-        table { width: 100%; border-collapse: collapse; }
+        .editor-container { padding: 20px; overflow-x: auto; max-height: 70vh; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
         th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
-        th { background: rgba(0,0,0,0.3); color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; position: sticky; top: 0; }
-        td input { border: none; background: transparent; color: var(--text-main); font-family: monospace; width: 100%; min-width: 80px; padding: 5px; }
-        td input:focus { background: rgba(5, 150, 105, 0.1); border-bottom: 2px solid var(--brand-primary); border-radius: 0; }
-
+        th { background: rgba(0,0,0,0.3); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; position: sticky; top: 0; z-index: 10; }
+        td input { border: none; background: transparent; color: var(--text-main); font-family: monospace; width: 100%; padding: 5px; outline: none; }
+        td input:focus { background: rgba(5, 150, 105, 0.15); }
+        tr:hover { background: rgba(255,255,255,0.02); }
     </style>
 </head>
 <body>
 
     <div class="container">
         <header>
-            <h1>Simply<span>Doors</span> | Live Data Editor</h1>
+            <h1>Simply<span>Doors</span> | Pricing Admin</h1>
         </header>
 
         <div class="grid">
-            <div>
+            <aside>
                 <div class="panel">
-                    <div class="panel-header"><span>1. Authenticate & Connect</span></div>
+                    <div class="panel-header"><span>Connection</span></div>
                     <div class="control-group">
-                        <label>Personal Access Token (PAT)</label>
-                        <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">*Stored strictly in browser memory.</div>
+                        <label>GitHub PAT Token</label>
+                        <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxx">
                     </div>
                     <div class="control-group" style="border: none;">
-                        <button class="btn-primary" id="fetchBtn" onclick="fetchLiveDatabase()">Connect & Fetch Data</button>
+                        <button class="btn-primary" id="fetchBtn" onclick="fetchLiveDatabase()">Fetch Live Data</button>
                     </div>
                 </div>
 
                 <div id="statusMessage" class="status-box"></div>
 
                 <div class="panel" id="publishPanel" style="display: none; border-color: var(--brand-primary);">
-                    <div class="panel-header" style="background: rgba(5, 150, 105, 0.2);"><span>3. Review & Deploy</span></div>
+                    <div class="panel-header" style="background: rgba(5, 150, 105, 0.1);"><span>Publish Updates</span></div>
                     <div class="control-group">
-                        <p style="font-size: 0.9rem; color: var(--text-muted);">Ensure your edits in the table are correct. Clicking publish will overwrite the live database.</p>
+                        <label>Deployment</label>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Pushing will update the JSON file in your repository immediately.</p>
                     </div>
                     <div class="control-group" style="border: none;">
-                        <button class="btn-primary" id="pushBtn" onclick="pushToGitHub()">Publish Changes to Live Server</button>
+                        <button class="btn-primary" id="pushBtn" onclick="pushToGitHub()">Publish Changes</button>
                     </div>
                 </div>
-            </div>
+            </aside>
 
-            <div class="panel" id="editorPanel" style="opacity: 0.5; pointer-events: none;">
+            <main class="panel" id="editorPanel" style="opacity: 0.3; pointer-events: none;">
                 <div class="panel-header">
-                    <span>2. Inline Editor</span>
-                    <select id="dataType" onchange="renderTable()" style="width: auto; padding: 5px; font-size: 0.9rem;">
+                    <span>Active Dataset Editor</span>
+                    <select id="dataType" onchange="renderTable()" style="width: auto; padding: 4px 10px; font-size: 0.85rem;">
+                        <option value="pricingDB">Door Slabs (Main DB)</option>
                         <option value="productionAdders">Production Adders</option>
                         <option value="trimPricingDB">Trim Pricing</option>
-                        <option value="pricingDB">Door Slab Pricing (8 Cols)</option>
                     </select>
                 </div>
                 <div class="editor-container">
                     <table id="dataTable">
-                        <thead>
-                            <tr id="tableHeader">
-                                </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            </tbody>
+                        <thead id="tableHeader"></thead>
+                        <tbody id="tableBody"></tbody>
                     </table>
-                    <div style="margin-top: 15px;">
-                        <button class="btn-secondary" onclick="addRow()">+ Add New Row</button>
-                    </div>
                 </div>
-            </div>
+                <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <button class="btn-secondary" onclick="addRow()">+ Add New Row</button>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">Rows are auto-mapped to nested JSON keys on save.</span>
+                </div>
+            </main>
         </div>
     </div>
 
@@ -123,102 +120,67 @@
         let fullLiveDatabase = null;
         let currentFileSha = null;
 
-        // Base64 Helpers
-        function encodeBase64(str) { return btoa(unescape(encodeURIComponent(str))); }
-        function decodeBase64(str) { return decodeURIComponent(escape(atob(str))); }
-
         function showStatus(msg, type) {
             const box = document.getElementById('statusMessage');
             box.innerText = msg;
             box.className = `status-box status-${type}`;
         }
 
-        // --- STEP 1: FETCH DATA ---
         async function fetchLiveDatabase() {
             const token = document.getElementById('githubToken').value.trim();
-            const btn = document.getElementById('fetchBtn');
-            
-            if (!token) return showStatus("Error: Please enter your GitHub Token.", "error");
+            if (!token) return showStatus("Token Required", "error");
 
-            btn.disabled = true;
-            showStatus("Connecting to GitHub...", "loading");
-
+            showStatus("Connecting...", "loading");
             try {
-                const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-                const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
-
-                if (!response.ok) throw new Error("Could not fetch pricing.json. Check token or repo details.");
-                
-                const data = await response.json();
+                const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error("Connection failed.");
+                const data = await res.json();
                 currentFileSha = data.sha;
-                fullLiveDatabase = JSON.parse(decodeBase64(data.content));
+                fullLiveDatabase = JSON.parse(decodeURIComponent(escape(atob(data.content))));
 
-                // Unlock the UI
                 document.getElementById('editorPanel').style.opacity = '1';
                 document.getElementById('editorPanel').style.pointerEvents = 'auto';
-                document.getElementById('publishPanel').style.display = 'flex';
-                
-                showStatus("Data successfully loaded! Select a category to edit.", "success");
-                renderTable(); // Render initial selection
-
-            } catch (error) {
-                showStatus(error.message, "error");
-            } finally {
-                btn.disabled = false;
-            }
+                document.getElementById('publishPanel').style.display = 'block';
+                showStatus("Connected & Data Loaded", "success");
+                renderTable();
+            } catch (e) { showStatus(e.message, "error"); }
         }
 
-        // --- STEP 2: RENDER TABLE ---
         function renderTable() {
-            if (!fullLiveDatabase) return;
-            
-            // Auto-save currently displayed data back to the fullLiveDatabase object BEFORE switching views
-            // This prevents losing edits if they switch tabs back and forth.
-            if (document.getElementById('tableBody').children.length > 0) {
-                 // Note: we'd normally save here, but for simplicity, we assume they edit one section then publish.
-            }
-
             const type = document.getElementById('dataType').value;
-            const header = document.getElementById('tableHeader');
+            const head = document.getElementById('tableHeader');
             const body = document.getElementById('tableBody');
-            
-            header.innerHTML = '';
-            body.innerHTML = '';
+            head.innerHTML = ''; body.innerHTML = '';
 
-            let data = fullLiveDatabase[type];
+            const db = fullLiveDatabase[type];
 
             if (type === 'productionAdders') {
-                header.innerHTML = `<th>Name</th><th>Cost</th><th>Action</th>`;
-                if(data) data.forEach(item => appendRow([item.name, item.cost]));
-            } 
-            else if (type === 'trimPricingDB') {
-                header.innerHTML = `<th>Profile Name</th><th>Width</th><th>Price Per Stick</th><th>Action</th>`;
-                for (let profile in data) {
-                    appendRow([profile, data[profile].width, data[profile].pricePerStick]);
-                }
-            } 
-            else if (type === 'pricingDB') {
-                header.innerHTML = `<th>Material</th><th>Shape/Style</th><th>Height</th><th>Core</th><th>Width</th><th>Tier 1</th><th>Tier 2</th><th>Tier 3</th><th>Action</th>`;
-                // Flatten deeply nested object
-                for (let mat in data) {
+                head.innerHTML = `<tr><th>Service Name</th><th>Cost ($)</th><th>Action</th></tr>`;
+                db.forEach(a => appendRow([a.name, a.cost]));
+            } else if (type === 'trimPricingDB') {
+                head.innerHTML = `<tr><th>Profile Name</th><th>Width (In)</th><th>Price / Stick ($)</th><th>Action</th></tr>`;
+                for (let k in db) appendRow([k, db[k].width, db[k].pricePerStick]);
+            } else if (type === 'pricingDB') {
+                head.innerHTML = `<tr><th>Material</th><th>Shape</th><th>Height</th><th>Core</th><th>Width</th><th>Tier 1</th><th>Tier 2</th><th>Tier 3</th><th>Action</th></tr>`;
+                for (let mat in db) {
                     if (mat === 'simpson' || mat === 'simpsonWhiteOak') {
-                        for (let shape in data[mat]) {
-                            for (let ht in data[mat][shape]) {
-                                for (let core in data[mat][shape][ht]) {
-                                    for (let wd in data[mat][shape][ht][core]) {
-                                        let tiers = data[mat][shape][ht][core][wd];
-                                        appendRow([mat, shape, ht, core, wd, tiers[0], tiers[1], tiers[2]]);
+                        for (let sh in db[mat]) {
+                            for (let ht in db[mat][sh]) {
+                                for (let cr in db[mat][sh][ht]) {
+                                    for (let wd in db[mat][sh][ht][cr]) {
+                                        let t = db[mat][sh][ht][cr][wd];
+                                        appendRow([mat, sh, ht, cr, wd, t[0], t[1], t[2]]);
                                     }
                                 }
                             }
                         }
                     } else {
-                        // Non-simpson has no shape key
-                        for (let ht in data[mat]) {
-                            for (let core in data[mat][ht]) {
-                                for (let wd in data[mat][ht][core]) {
-                                    let tiers = data[mat][ht][core][wd];
-                                    appendRow([mat, "", ht, core, wd, tiers[0], tiers[1], tiers[2]]); // Leave shape blank
+                        for (let ht in db[mat]) {
+                            for (let cr in db[mat][ht]) {
+                                for (let wd in db[mat][ht][core]) {
+                                    let t = db[mat][ht][cr][wd];
+                                    appendRow([mat, "", ht, cr, wd, t[0], t[1], t[2]]);
                                 }
                             }
                         }
@@ -227,129 +189,76 @@
             }
         }
 
-        function appendRow(values) {
+        function appendRow(vals) {
             const tr = document.createElement('tr');
-            let html = '';
-            values.forEach(val => {
-                html += `<td><input type="text" value="${val}"></td>`;
-            });
-            html += `<td><button class="btn-danger" onclick="this.parentElement.parentElement.remove()">Delete</button></td>`;
-            tr.innerHTML = html;
+            tr.innerHTML = vals.map(v => `<td><input type="text" value="${v}"></td>`).join('') + `<td><button class="btn-danger" onclick="this.parentElement.parentElement.remove()">X</button></td>`;
             document.getElementById('tableBody').appendChild(tr);
         }
 
         function addRow() {
             const type = document.getElementById('dataType').value;
-            const cols = type === 'productionAdders' ? 2 : (type === 'trimPricingDB' ? 3 : 8);
-            appendRow(Array(cols).fill(""));
+            const count = type === 'productionAdders' ? 2 : (type === 'trimPricingDB' ? 3 : 8);
+            appendRow(Array(count).fill(""));
         }
 
-        // --- STEP 3: GATHER DATA FROM TABLE ---
-        function gatherTableData() {
+        function collect() {
             const type = document.getElementById('dataType').value;
             const rows = document.querySelectorAll('#tableBody tr');
-            let updatedData;
-
             if (type === 'productionAdders') {
-                updatedData = [];
-                rows.forEach(row => {
-                    const inputs = row.querySelectorAll('input');
-                    if (inputs[0].value.trim() !== '') {
-                        updatedData.push({
-                            name: inputs[0].value.trim(),
-                            cost: parseFloat(inputs[1].value.replace(/[^0-9.-]+/g, "")) || 0
-                        });
-                    }
+                return Array.from(rows).map(r => {
+                    const i = r.querySelectorAll('input');
+                    return { name: i[0].value, cost: parseFloat(i[1].value) || 0 };
                 });
-            } 
-            else if (type === 'trimPricingDB') {
-                updatedData = {};
-                rows.forEach(row => {
-                    const inputs = row.querySelectorAll('input');
-                    const profile = inputs[0].value.trim();
-                    if (profile !== '') {
-                        updatedData[profile] = {
-                            width: parseFloat(inputs[1].value.replace(/[^0-9.-]+/g, "")) || 0,
-                            pricePerStick: parseFloat(inputs[2].value.replace(/[^0-9.-]+/g, "")) || 0
-                        };
-                    }
+            } else if (type === 'trimPricingDB') {
+                let obj = {};
+                rows.forEach(r => {
+                    const i = r.querySelectorAll('input');
+                    if (i[0].value) obj[i[0].value] = { width: parseFloat(i[1].value) || 0, pricePerStick: parseFloat(i[2].value) || 0 };
                 });
-            } 
-            else if (type === 'pricingDB') {
-                updatedData = {};
-                rows.forEach(row => {
-                    const inputs = row.querySelectorAll('input');
-                    const mat = inputs[0].value.trim();
-                    if (mat === '') return; // Skip empty rows
-
-                    const shape = inputs[1].value.trim();
-                    const ht = inputs[2].value.trim();
-                    const core = inputs[3].value.trim();
-                    const wd = inputs[4].value.trim();
-                    const t1 = parseFloat(inputs[5].value.replace(/[^0-9.-]+/g, "")) || 0;
-                    const t2 = parseFloat(inputs[6].value.replace(/[^0-9.-]+/g, "")) || 0;
-                    const t3 = parseFloat(inputs[7].value.replace(/[^0-9.-]+/g, "")) || 0;
-
-                    if (!updatedData[mat]) updatedData[mat] = {};
-
-                    if (mat === 'simpson' || mat === 'simpsonWhiteOak') {
-                        if (!updatedData[mat][shape]) updatedData[mat][shape] = {};
-                        if (!updatedData[mat][shape][ht]) updatedData[mat][shape][ht] = {};
-                        if (!updatedData[mat][shape][ht][core]) updatedData[mat][shape][ht][core] = {};
-                        updatedData[mat][shape][ht][core][wd] = [t1, t2, t3];
+                return obj;
+            } else {
+                let obj = {};
+                rows.forEach(r => {
+                    const i = r.querySelectorAll('input');
+                    const [mat, sh, ht, cr, wd, t1, t2, t3] = Array.from(i).map(x => x.value);
+                    if (!mat) return;
+                    if (!obj[mat]) obj[mat] = {};
+                    if (mat.includes('simpson')) {
+                        if (!obj[mat][sh]) obj[mat][sh] = {};
+                        if (!obj[mat][sh][ht]) obj[mat][sh][ht] = {};
+                        if (!obj[mat][sh][ht][cr]) obj[mat][sh][ht][cr] = {};
+                        obj[mat][sh][ht][cr][wd] = [parseFloat(t1)||0, parseFloat(t2)||0, parseFloat(t3)||0];
                     } else {
-                        if (!updatedData[mat][ht]) updatedData[mat][ht] = {};
-                        if (!updatedData[mat][ht][core]) updatedData[mat][ht][core] = {};
-                        updatedData[mat][ht][core][wd] = [t1, t2, t3];
+                        if (!obj[mat][ht]) obj[mat][ht] = {};
+                        if (!obj[mat][ht][cr]) obj[mat][ht][cr] = {};
+                        obj[mat][ht][cr][wd] = [parseFloat(t1)||0, parseFloat(t2)||0, parseFloat(t3)||0];
                     }
                 });
+                return obj;
             }
-            return updatedData;
         }
 
-        // --- STEP 4: PUSH BACK TO GITHUB ---
         async function pushToGitHub() {
-            const token = document.getElementById('githubToken').value.trim();
-            const btn = document.getElementById('pushBtn');
+            const token = document.getElementById('githubToken').value;
             const type = document.getElementById('dataType').value;
-
-            if (!token || !currentFileSha || !fullLiveDatabase) return showStatus("Error: Session invalid. Refresh and reconnect.", "error");
-
-            btn.disabled = true;
-            showStatus("Compiling data and pushing to GitHub...", "loading");
+            const btn = document.getElementById('pushBtn');
+            btn.disabled = true; showStatus("Saving...", "loading");
 
             try {
-                // Read current edits from the DOM and update the global database object
-                fullLiveDatabase[type] = gatherTableData();
-
-                const newFileContent = encodeBase64(JSON.stringify(fullLiveDatabase, null, 2));
-                const apiUrl = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-
-                const putResponse = await fetch(apiUrl, {
+                fullLiveDatabase[type] = collect();
+                const content = btoa(unescape(encodeURIComponent(JSON.stringify(fullLiveDatabase, null, 2))));
+                const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
+                const res = await fetch(url, {
                     method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: `Admin Update: Modified ${type} directly via Editor UI`,
-                        content: newFileContent,
-                        sha: currentFileSha 
-                    })
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: `Admin: Edit ${type}`, content, sha: currentFileSha })
                 });
-
-                if (!putResponse.ok) throw new Error("Failed to push. Token may have expired or lacks repo permissions.");
-
-                const updatedData = await putResponse.json();
-                currentFileSha = updatedData.content.sha; // Update the SHA so we can push again without refreshing!
-
-                showStatus("Success! Database updated. Changes will reflect on the live app shortly.", "success");
-
-            } catch (error) {
-                showStatus(error.message, "error");
-            } finally {
-                btn.disabled = false;
-            }
+                if (!res.ok) throw new Error("Push failed.");
+                const result = await res.json();
+                currentFileSha = result.content.sha;
+                showStatus("Live Pricing Updated!", "success");
+            } catch (e) { showStatus(e.message, "error"); }
+            btn.disabled = false;
         }
     </script>
 </body>
