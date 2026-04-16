@@ -1435,7 +1435,7 @@
   "productionAdders": [
     {
       "name": "Slab Cutdown",
-      "cost": 10
+      "cost": 99
     }
   ]
 }
