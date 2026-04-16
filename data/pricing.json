@@ -2428,6 +2428,46 @@
     {
       "name": "Testing",
       "cost": 100
+    },
+    {
+      "name": "Prehang 6'8 Single (Std 4-9/16)",
+      "cost": 25
+    },
+    {
+      "name": "Prehang 8'0 Single (Std 4-9/16)",
+      "cost": 32
+    },
+    {
+      "name": "Upcharge to Interior 6-9/16 Jamb",
+      "cost": 20
+    },
+    {
+      "name": "Prehang 6'8 Double Ball Catch",
+      "cost": 55
+    },
+    {
+      "name": "Prehang 6'8 Double Flush Bolt",
+      "cost": 85
+    },
+    {
+      "name": "Prehang 8'0 Double Flush Bolt",
+      "cost": 95
+    },
+    {
+      "name": "Prehang 8'0 Double Ball Catch",
+      "cost": 50
+    },
+    {
+      "name": "Upcharge to Primed FJ Jamb",
+      "cost": 5
+    },
+    {
+      "name": "Hinge Prep (Per Slab)",
+      "cost": 30
+    },
+    {
+      "name": "Bore Prep (Per Slab)",
+      "cost": 20
     }
   ],
   "systemConstants": {
