@@ -150,7 +150,7 @@
         .btn-copy { background: #f1f5f9; border: 1px solid #cbd5e1; color: var(--text-main); padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.5px;}
         .btn-copy:hover { background: #e2e8f0; }
         .btn-copy.copied { background: var(--brand-primary); color: white; border-color: var(--brand-accent); }
-        .btn-copy-all { background: var(--brand-primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-copy-all { background: var(--brand-primary); color: white; border: none; padding: 8px 15px; border-radius: 6px; font-size: 0.85rem; font-weight: bold; cursor: transition: 0.2s; }
         .btn-copy-all:hover { background: var(--brand-accent); }
 
         @media (max-width: 1200px) {
@@ -835,23 +835,24 @@
         // Set up empty global variables to hold our data
         let rawStevesMatrix, stevesMatrix, pricingDB, trimPricingDB, productionAdders;
 
-        // The Fetch Engine (With Cache Buster)
+        // The Fetch Engine
         async function initializeApplication() {
             try {
-                // ADDED CACHE BUSTER: ?v= + timestamp ensures the browser always gets the newest version
+                // 1. Fetch the JSON file with cache-busting timestamp
                 const response = await fetch(`data/pricing.json?v=${new Date().getTime()}`);
                 
                 if (!response.ok) throw new Error("Failed to load pricing database.");
                 
+                // 2. Parse the JSON into JavaScript objects
                 const data = await response.json();
 
-                // Assign the data to our global variables
+                // 3. Assign the data to our global variables
                 rawStevesMatrix = data.rawStevesMatrix;
                 pricingDB = data.pricingDB;
                 trimPricingDB = data.trimPricingDB;
                 productionAdders = data.productionAdders;
 
-                // Build the parsed stevesMatrix for the UI logic
+                // 4. Build the parsed stevesMatrix for the UI logic
                 stevesMatrix = {};
                 Object.entries(rawStevesMatrix).forEach(([shape, heights]) => {
                     stevesMatrix[shape] = {};
@@ -861,7 +862,7 @@
                     });
                 });
 
-                // Initialize the UI
+                // 5. Data is loaded! Now we can safely initialize the UI
                 initAdders();
                 resetConfigurator();
                 loadTally();
@@ -869,6 +870,7 @@
             } catch (error) {
                 console.error("Initialization Error:", error);
                 document.getElementById('sidebarItemsList').innerHTML = `<div style="text-align: center; color: #991b1b; padding: 20px 0; font-size: 0.9rem; font-weight: bold;">Error loading pricing database.</div>`;
+                alert("Critical Error: Could not connect to the pricing database. Please check your internet connection and refresh.");
             }
         }
 
@@ -993,7 +995,7 @@
                                     let doubleW = `${Math.floor(tInches / 12)}'${tInches % 12}"`;
                                     availableWidths.push(doubleW); statusMap[doubleW] = mData.single[i];
                                 } else {
-                                    availableWidths.push(w); statusMap[doubleW] = mData.single[i];
+                                    availableWidths.push(w); statusMap[w] = mData.single[i];
                                 }
                             }
                         });
@@ -1088,14 +1090,53 @@
             }
 
             if (isDouble) {
-                if (DOM_CACHE.ballCatchWrapper) DOM_CACHE.ballCatchWrapper.classList.toggle('hidden', appState.handing === 'No Hand');
+                if (DOM_CACHE.ballCatchWrapper) DOM_CACHE.ballCatchWrapper.classList.toggle('hidden', appState.handing !== 'No Hand');
                 if (DOM_CACHE.flushBolt68Wrapper) DOM_CACHE.flushBolt68Wrapper.classList.toggle('hidden', appState.handing === 'No Hand' || appState.height !== '68');
                 if (DOM_CACHE.flushBolt80Wrapper) DOM_CACHE.flushBolt80Wrapper.classList.toggle('hidden', appState.handing === 'No Hand' || appState.height === '68');
             }
 
+            const controlled = ["Prehang 6'8 Single (Std 4-9/16)", "Prehang 8'0 Single (Std 4-9/16)", "Prehang 6'8 Double Ball Catch", "Prehang 6'8 Double Flush Bolt", "Prehang 8'0 Double Flush Bolt", "Prehang 8'0 Double Ball Catch", "Upcharge to Interior 6-9/16 Jamb", "Upcharge to Primed FJ Jamb"];
             document.querySelectorAll('.calc-trigger').forEach(box => {
                 box.checked = appState.services.includes(box.dataset.name);
+                if (controlled.includes(box.dataset.name)) {
+                    box.disabled = false; 
+                    box.parentElement.classList.remove('locked-service');
+                }
             });
+
+            function lockServiceUI(name) {
+                const box = document.querySelector(`.calc-trigger[data-name="${name}"]`);
+                if (box) {
+                    if (!appState.services.includes(name)) appState.services.push(name);
+                    box.checked = true; box.disabled = true; 
+                    box.parentElement.classList.add('locked-service');
+                }
+            }
+
+            if (!isMisc && !isCustom && appState.unitType === 'prehung' && !isSlabOnly && !isCased && !isBifold) {
+                if (isDouble) {
+                    if (appState.handing !== 'No Hand') lockServiceUI(appState.height === '80' ? "Prehang 8'0 Double Flush Bolt" : "Prehang 6'8 Double Flush Bolt");
+                    else lockServiceUI(appState.height === '80' ? "Prehang 8'0 Double Ball Catch" : "Prehang 6'8 Double Ball Catch");
+                }
+                else { lockServiceUI(appState.height === '80' ? "Prehang 8'0 Single (Std 4-9/16)" : "Prehang 6'8 Single (Std 4-9/16)"); }
+
+                if (appState.jambSize === '6-9/16"' && appState.jambFinish !== 'white_oak') lockServiceUI("Upcharge to Interior 6-9/16 Jamb");
+                if (appState.jambFinish === 'primed') lockServiceUI("Upcharge to Primed FJ Jamb");
+            }
+
+            if (DOM_CACHE.trimAppGroup) {
+                const preAppliedPill = DOM_CACHE.trimAppGroup.querySelector('.pill[data-val="applied"]');
+                if (appState.trimProfile === 'none') {
+                    DOM_CACHE.trimAppGroup.classList.add('disabled-group');
+                } else {
+                    DOM_CACHE.trimAppGroup.classList.remove('disabled-group');
+                    if (preAppliedPill) {
+                        if (trimPricingDB[appState.trimProfile]?.width > 2.5) preAppliedPill.classList.add('disabled-group');
+                        else preAppliedPill.classList.remove('disabled-group');
+                    }
+                }
+                updatePills('trimApplicationGroup', appState.trimApplication);
+            }
         }
 
         // ==========================================
@@ -1121,7 +1162,7 @@
             if (state.mode === 'bifold') sku = `BIFOLD-${styleCode}-${w}${state.height}`;
             if (state.mode === 'cased_opening') sku = `CASED-OPN-${w}${state.height}`;
             if (state.mode === 'misc') sku = "MISC-ITEM";
-            if (state.material === 'Custom') sku = "CUSTOM-DOOR";
+            if (state.material === 'Custom') sku = state.customDesc ? state.customDesc.substring(0, 15).toUpperCase() + "..." : "CUSTOM-DOOR";
 
             return {
                 margin: (state.margin || 0) / 100, mode: state.mode, unitType: state.unitType, width: state.width, height: state.height, material: state.material,
@@ -1133,17 +1174,523 @@
             };
         }
 
+        function calcBaseSlab(config) {
+            if (config.mode === 'misc' || config.material === 'Custom') return { cost: config.customCost, sysW: config.customW, sysH: config.customH, valid: true };
+            if (config.mode === 'cased_opening') return { cost: 0, sysW: 36, sysH: 80, valid: true };
+
+            let styleKey = config.material === 'Flush' ? 'flushHB' : (config.material === 'Simpson' ? 'simpson' : (config.material === 'Simpson White Oak' ? 'simpsonWhiteOak' : 'molded'));
+            let coreKey = config.material === 'Simpson' ? config.core : (config.material === 'Simpson White Oak' ? '138HC' : (config.core === 'SC' ? '138SC' : '138HC'));
+            let tIndex = config.tier === 'jobLot' ? 0 : (config.tier === 'pallet' ? 1 : 2);
+            
+            let sysWidthInches = 36;
+            let lookupW = '2/4';
+            if (config.width) {
+                let pts = config.width.replace('"', '').split("'");
+                sysWidthInches = parseInt(pts[0]) * 12 + parseInt(pts[1] || 0);
+                if (config.mode === 'double') sysWidthInches /= 2;
+                lookupW = `${Math.floor(sysWidthInches/12)}/${sysWidthInches%12}`;
+                if (config.mode === 'double') sysWidthInches *= 2; 
+            }
+            let sysHeightInches = config.height === '68' ? 80 : (config.height === '70' ? 84 : 96);
+
+            let rawPrice = null;
+            let finalCost = 0;
+            try {
+                rawPrice = (styleKey === 'simpson' || styleKey === 'simpsonWhiteOak') 
+                    ? pricingDB[styleKey][config.shape][config.height][coreKey][lookupW]
+                    : (pricingDB[styleKey][config.height][coreKey][lookupW]);
+                
+                if (rawPrice != null) finalCost = Array.isArray(rawPrice) ? (rawPrice[tIndex] || 0) : rawPrice;
+            } catch (e) {}
+
+            return { cost: finalCost, sysW: sysWidthInches, sysH: sysHeightInches, valid: rawPrice != null && !isNaN(finalCost) && finalCost !== null };
+        }
+
+        function calcHardware(config) {
+            let hwCost = 0;
+            if (config.mode === 'misc') return hwCost;
+
+            if (config.jambFinish === 'white_oak' && config.mode !== 'slab_only') {
+                let pairCost = config.jambSize === '6-9/16"' ? 126.90 : 94.10;
+                hwCost += ((config.mode === 'double') ? (pairCost * 1.5) : pairCost) + (12.98 * ((config.mode === 'double') ? 4 : 3));
+            }
+
+            if (config.mode === 'double' && config.material !== 'Custom') {
+                if (config.handing === 'No Hand') hwCost += parseFloat((config.ballCatch || "0|").split('|')[0] || 0);
+                else hwCost += parseFloat((config.height === '68' ? (config.flushBolt68 || "0|") : (config.flushBolt80 || "0|")).split('|')[0] || 0) + (config.height === '68' ? 30.87 : (config.handing === 'RHA' ? 42.13 : 35.26));
+            }
+            return hwCost;
+        }
+
+        function calcTrim(config, sysW, sysH, qty) {
+            if (config.mode === 'misc' || config.mode === 'slab_only' || !config.trimProfile || config.trimProfile === 'none') return { mat: 0, lab: 0, sticks: 0 };
+            const tData = trimPricingDB[config.trimProfile];
+            if (!tData) return { mat: 0, lab: 0, sticks: 0 };
+
+            const totalInches = (sysW + (sysH * 2) + (tData.width > 0 ? (tData.width * 2) : 0)) * 2 * qty;
+            const trimSticks = Math.ceil((totalInches * 1.10) / 168); 
+            
+            let trimLab = 0;
+            if (config.trimApplication === 'cut') trimLab = 7.00;
+            else if (config.trimApplication === 'applied') trimLab = 15.00;
+
+            return { mat: (trimSticks * tData.pricePerStick) / qty, lab: trimLab, sticks: trimSticks };
+        }
+
+        function buildOutput(config, qty, sysW, sysH, trimSticks) {
+            let desc = `<strong style="color:var(--brand-dark);">Product Information:</strong><br>`;
+            let bom = [];
+            const isDouble = config.mode === 'double';
+
+            if (config.mode === 'misc') {
+                let note = config.customDesc || "Misc Product / Part";
+                desc += `${note}<br><br>`; bom.push({ name: note, qty: qty });
+            } else {
+                let typeName = isDouble ? "Double Door" : (config.mode === 'bifold' ? "Bifold Door" : (config.mode === 'slab_only' ? "Prepped Slab Only" : (config.mode === 'cased_opening' ? "Cased Opening" : "Single Door")));
+                let dimStr = config.material === 'Custom' ? `${sysW}" x ${sysH}"` : `${config.width} x ${config.height === '68' ? "6'8\"" : (config.height === '70' ? "7'0\"" : "8'0\"")}`;
+                
+                desc += `${typeName}<br> ${dimStr}<br> ${config.unitType === 'prehung' || config.mode === 'slab_only' ? config.handing : ''}<br><br>`;
+
+                if (config.mode !== 'cased_opening') {
+                    if (config.material === 'Custom') {
+                        let note = config.customDesc || "Custom Vendor Slab";
+                        desc += `<strong style="color:var(--brand-dark);">Door Design: Custom</strong><br> ${note}<br><br>`;
+                        bom.push({ name: `Custom Slab: ${note}`, qty: isDouble ? (qty * 2) : qty });
+                    } else {
+                        let cStr = config.material === 'Simpson White Oak' ? "Solid Wood" : (config.core === 'SC' || (config.core && config.core.includes('1-3/4')) ? "Solid Core" : "Hollow Core");
+                        desc += `<strong style="color:var(--brand-dark);">Door Design: ${config.material}</strong><br> ${config.skuBase}<br> ${cStr} ${config.shape}<br><br>`;
+                        bom.push({ name: `Door Slab (${config.skuBase})`, qty: isDouble ? (qty * 2) : qty });
+                    }
+                }
+
+                if (config.unitType === 'prehung' || config.mode === 'cased_opening') {
+                    let isWO = config.jambFinish === 'white_oak';
+                    let fName = `${config.jambSize} ${isWO ? 'White Oak' : (config.jambFinish === 'primed' ? 'Primed FJ Pine' : 'Raw FJ Pine')} Flat Jamb${sysH > 80 ? " - 8'0\"" : " - 6'8\""}`;
+                    let sName = isWO ? "3/8\" x 1-3/8\" x 98\" White Oak Interior Stop" : (config.jambFinish === 'primed' ? "STOP 0887 PFJ 3/8 X 1-1/4 X 14' PRM" : `STOP 0887 PFJ RAW 2MIT`);
+                    
+                    desc += `<strong style="color:var(--brand-dark);">Frame & Stop:</strong><br> ${fName}<br> ${isWO ? 'White Oak' : (config.jambFinish === 'primed' ? 'Primed' : 'Raw')} Stop Applied<br><br>`;
+                    bom.push({ name: fName, qty: Math.ceil(isDouble ? (qty * 3) : (3 + ((qty - 1) * 2.5))) }, { name: sName, qty: isWO ? (isDouble ? 4 : 3) * qty : Math.ceil(isDouble ? (qty * 3) : (3 + ((qty - 1) * 2.5))) });
+
+                    if (trimSticks > 0 && config.trimProfile !== 'none') {
+                        let appStr = config.trimApplication === 'cut' ? 'Pre-Cut' : (config.trimApplication === 'applied' ? 'Pre-Applied' : 'Material Included');
+                        desc += `<strong style="color:var(--brand-dark);">Trim & Casing:</strong><br> ${config.trimProfile}<br> ${appStr}<br><br>`;
+                        bom.push({ name: `14' Trim Stick: ${config.trimProfile}`, qty: trimSticks });
+                    }
+
+                    if (config.unitType === 'prehung' && config.mode !== 'bifold') {
+                        desc += `<strong style="color:var(--brand-dark);">Hardware:</strong><br> ${config.activeBore} ${isDouble ? '/ ' + config.inactiveBore : ''}<br> ${config.hingeFinish} ${config.hingeShape}<br><br>`;
+                        bom.push({ name: `Hinge: ${config.hingeFinish} ${config.hingeShape}`, qty: isDouble ? (qty * 6) : (qty * 3) });
+                        
+                        if (isDouble && config.material !== 'Custom') {
+                            let hw = config.handing === 'No Hand' ? (config.ballCatch||"|").split('|')[1] : (sysH === 80 ? (config.flushBolt68||"|").split('|')[1] : (config.flushBolt80||"|").split('|')[1]);
+                            if (hw) {
+                                desc += `<strong>Double Hardware:</strong><br>${hw}<br><br>`;
+                                bom.push({ name: hw, qty: qty });
+                            }
+                            if (config.handing !== 'No Hand') bom.push({ name: "Solid Pine Astragal W/ BoltPrep", qty: qty });
+                        }
+                    }
+                }
+            }
+
+            if (config.services.length > 0) desc += `<strong style="color:var(--brand-dark);">Services & Adders:</strong><br> ${config.services.map(s => s.name).join('<br>')}`;
+            return { desc, bom };
+        }
+
         function calculatePricingAndBOM(config, qty) {
-            // Placeholder for the calculation logic previously provided
-            return { valid: true, cost: 0, price: 0, profit: 0, markup: 0, desc: "", bom: [] };
+            const slabData = calcBaseSlab(config);
+            const totalSlabCost = slabData.cost * (config.mode === 'misc' ? 1 : (config.mode === 'double' ? 2 : (config.mode === 'cased_opening' ? 0 : 1)));
+            const hwCost = calcHardware(config);
+            const trimData = calcTrim(config, slabData.sysW, slabData.sysH, qty);
+            const addersCost = config.services.reduce((sum, s) => sum + s.cost, 0);
+
+            const unitCost = totalSlabCost + hwCost + trimData.mat + trimData.lab + addersCost;
+            const price = config.margin >= 1 ? 0 : (unitCost * qty) / (1 - config.margin);
+            const { desc, bom } = buildOutput(config, qty, slabData.sysW, slabData.sysH, trimData.sticks);
+
+            return { 
+                valid: slabData.valid || config.mode === 'cased_opening' || config.mode === 'misc' || config.material === 'Custom', 
+                cost: unitCost * qty, price: price, profit: price - (unitCost * qty), markup: unitCost > 0 ? price / (unitCost * qty) : 0, desc: desc, bom: bom 
+            };
         }
 
         const updateCosting = debounce(() => {
             const config = buildConfig(appState);
             const result = calculatePricingAndBOM(config, appState.qty || 1);
-            // Update the display fields with the result
+
+            document.getElementById('calculatedMarkup').innerText = result.markup.toFixed(2) + "x";
+            document.getElementById('floatingInternalCost').innerText = "$" + result.cost.toFixed(2);
             document.getElementById('calculatedPrice').innerText = "$" + result.price.toFixed(2);
+            document.getElementById('floatingProfit').innerText = "+$" + result.profit.toFixed(2);
+
+            const alertBox = document.getElementById('priceAlert');
+            const badge = document.getElementById('stockStatusBadge');
+
+            if (!result.valid) {
+                alertBox.style.display = 'block'; document.getElementById('calculatedPrice').innerText = "N/A";
+                badge.className = 'status-badge status-invalid'; badge.innerText = 'N/A - Check Config';
+            } else {
+                alertBox.style.display = 'none';
+                if (appState.mode === 'misc' || appState.material === 'Custom') { badge.className = 'status-badge status-custom'; badge.innerText = 'Custom Quote'; }
+                else if (appState.material === 'Simpson White Oak') { badge.className = 'status-badge status-extended'; badge.innerText = 'Extended Lead (3 Weeks)'; }
+                else if (appState.tier === 'drop') { badge.className = 'status-badge status-special'; badge.innerText = 'Special Order'; }
+                else { badge.className = 'status-badge status-stock'; badge.innerText = 'In Stock'; }
+            }
+            currentQuoteData = result;
+            updatePreview(config.skuBase);
         }, 150);
+
+        function updatePreview(sku) {
+            const stage = document.getElementById('doorStage');
+            document.getElementById('dynamicSkuDisplay').innerText = sku;
+            
+            if (appState.mode === 'misc') {
+                stage.innerHTML = `<div class="custom-blueprint">Custom / Misc Item<br><br>⚙️</div>`; return;
+            }
+            if (appState.material === 'Custom') {
+                stage.innerHTML = `<div class="custom-blueprint" style="height: ${Math.min(300, (appState.customH||84) * 3)}px; width: ${Math.min(140, (appState.customW||36) * 3)}px;">CUSTOM SLAB<br>${appState.customW||36}" x ${appState.customH||84}"</div>`; return;
+            }
+            
+            let shape = appState.shapeFlush;
+            if (appState.material === 'Simpson') shape = appState.shapeSimpson;
+            else if (appState.material === 'Molded') shape = appState.shapeMolded;
+            else if (appState.material === 'Simpson White Oak') shape = appState.whiteOakCategory === 'Solid Shaker' ? appState.shapeWhiteOakSolid : appState.shapeWhiteOakGlass;
+
+            let styleCode = 'FLSH';
+            if(appState.material === 'Molded') styleCode = shape.includes('Shaker') ? 'SM' + shape.split(' ')[0] + 'P' : 'SM' + shape.split(' ')[0] + 'P';
+            else if(appState.material === 'Simpson' || appState.material === 'Simpson White Oak') styleCode = 'SP' + (shape.match(/\d+/) ? shape.match(/\d+/)[0] : 'CSTM');
+
+            let panelsHTML = `<div class="shape-container"><div class="shape-flush"></div></div>`;
+            if (shape.includes('Panel')) panelsHTML = `<div class="shape-container"><div class="shape-1p"><div class="door-panel-detail"></div></div></div>`; 
+
+            let mFolder = appState.material === 'Simpson' ? 'simpson' : (appState.material === 'Molded' ? 'molded' : (appState.material === 'Simpson White Oak' ? 'white-oak' : 'flush'));
+            const combinedHTML = `<img src="assets/images/doors/${mFolder}/${styleCode}.webp" alt="${styleCode}" style="width:100%; height:100%; object-fit:contain; position:absolute; top:0; left:0; z-index:5;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">${panelsHTML.replace('class="shape-container"', 'class="shape-container" style="display:none;"')}`;
+
+            let sClass = `door-slab ${appState.mode === 'bifold' ? 'bifold' : ''}`;
+            if (appState.mode === 'cased_opening') stage.innerHTML = '';
+            else if (appState.mode !== 'double') stage.innerHTML = `<div class="${sClass}">${combinedHTML}${appState.handing.includes('H') ? `<div class="door-knob ${appState.handing==='LH'?'knob-right':'knob-left'}"></div>` : ''}</div>`;
+            else stage.innerHTML = `<div class="${sClass}">${combinedHTML}${appState.handing==='LHA'?'<div class="door-knob knob-right"></div>':''}</div><div class="${sClass}">${combinedHTML}${appState.handing==='RHA'?'<div class="door-knob knob-left"></div>':''}</div>`;
+        }
+
+        // ==========================================
+        // GLOBAL EVENT DELEGATION
+        // ==========================================
+
+        document.addEventListener('click', (e) => {
+            const pill = e.target.closest('.pill');
+            if (!pill || pill.parentElement.classList.contains('disabled-group')) return;
+            const parent = pill.closest('.pill-group');
+            if (!parent) return;
+
+            const stateMap = {
+                'configTypeGroup': 'mode', 'unitTypeGroup': 'unitType', 'materialGroup': 'material', 'whiteOakCategoryGroup': 'whiteOakCategory',
+                'shapeGroupMolded': 'shapeMolded', 'shapeGroupFlush': 'shapeFlush', 'shapeGroupSimpson': 'shapeSimpson', 'shapeGroupWhiteOakSolid': 'shapeWhiteOakSolid',
+                'shapeGroupWhiteOakGlass': 'shapeWhiteOakGlass', 'doorHeightGroup': 'height', 'coreGroup': 'core', 'simpsonThicknessGroup': 'simpsonThickness',
+                'jambSizeGroup': 'jambSize', 'jambFinishGroup': 'jambFinish', 'trimApplicationGroup': 'trimApplication', 'handingGroup': 'handing',
+                'activeBoreGroup': 'activeBore', 'inactiveBoreGroup': 'inactiveBore'
+            };
+
+            if (stateMap[parent.id]) syncState(stateMap[parent.id], pill.dataset.val);
+        });
+
+        document.addEventListener('change', (e) => {
+            if (e.target.classList.contains('calc-trigger')) {
+                const name = e.target.dataset.name;
+                if (e.target.checked) { if (!appState.services.includes(name)) appState.services.push(name); } 
+                else appState.services = appState.services.filter(s => s !== name);
+                renderUI(); updateCosting();
+            }
+        });
+
+        const inputMap = {
+            'marginPercent': ['margin', 'float'], 'roomInput': ['room', 'string'], 'qtyInput': ['qty', 'int'], 'doorWidth': ['width', 'string'],
+            'purchaseType': ['tier', 'string'], 'hingeFinish': ['hingeFinish', 'string'], 'hingeShape': ['hingeShape', 'string'],
+            'ballCatch': ['ballCatch', 'string'], 'flushBolt68': ['flushBolt68', 'string'], 'flushBolt80': ['flushBolt80', 'string'],
+            'trimProfile': ['trimProfile', 'string'], 'customDesc': ['customDesc', 'string'], 'customCost': ['customCost', 'float'],
+            'customWidthInches': ['customW', 'float'], 'customHeightInches': ['customH', 'float']
+        };
+
+        const delegateInput = (e) => {
+            if (e.target.id && inputMap[e.target.id]) {
+                const [key, type] = inputMap[e.target.id];
+                let val = e.target.value;
+                if (type === 'int') val = parseInt(val) || 1;
+                if (type === 'float') val = parseFloat(val) || 0;
+                syncState(key, val);
+            }
+        };
+        
+        document.addEventListener('input', delegateInput);
+        document.addEventListener('change', delegateInput);
+
+        // ==========================================
+        // CART & QUOTE MANAGEMENT
+        // ==========================================
+
+        function resetConfigurator() {
+            appState = {
+                margin: 30, room: "", qty: 1, mode: "single", unitType: "prehung", material: "Molded", whiteOakCategory: "Solid Shaker",
+                shapeMolded: "1 Panel Shaker", shapeFlush: "Hardwood", shapeSimpson: "1 Panel Shaker", shapeWhiteOakSolid: "1 Panel Shaker",
+                shapeWhiteOakGlass: "1-Lite Clear", core: "HC", simpsonThickness: "1-3/8_std", width: "2'8\"", height: "68", tier: "jobLot",
+                jambSize: '4-9/16"', jambFinish: "raw", trimProfile: "none", trimApplication: "included", handing: "LH", activeBore: "Single Bore",
+                inactiveBore: "No Bore", hingeFinish: "Satin Nickel Standard Hinge", hingeShape: '5/8" Radius 5/8" Radius Hinge Shape',
+                ballCatch: "0.50|Ball Catch Strike Plate Only Satin Nickel", flushBolt68: "4.30|7\" Flip Lever Flush Bolt Satin Nickel US15",
+                flushBolt80: "6.37|Flip Lvr Fl Bolt w/16\" Extension SatNckl US15", customDesc: "", customCost: 0.00, customW: 36, customH: 84, services: []
+            };
+            if (rawStevesMatrix) {
+                renderUI(); updateCosting();
+            }
+        }
+
+        function loadTally() {
+            try { 
+                const stored = localStorage.getItem('sd_projectTally'); 
+                if(stored) projectTally = JSON.parse(stored).filter(item => item.config !== undefined);
+            } catch(e){}
+            renderSidebar();
+        }
+
+        function addToQuote() {
+            if (!currentQuoteData || (!currentQuoteData.valid && currentQuoteData.price <= 0 && appState.mode !== 'cased_opening')) return alert("Cannot add invalid configuration.");
+            
+            const newItem = { 
+                id: editingIndex !== null ? projectTally[editingIndex].id : Math.random().toString(36).substr(2, 9), 
+                type: appState.mode === 'misc' ? 'misc' : 'interior_door', 
+                room: appState.room || "None Assigned", qty: appState.qty || 1, config: buildConfig(appState), state: JSON.parse(JSON.stringify(appState))
+            };
+
+            if (editingIndex !== null) {
+                projectTally[editingIndex] = newItem; showToast("Item Updated!"); cancelEdit();
+            } else {
+                projectTally.push(newItem); showToast("Item added to Cart!");
+                appState.qty = 1; appState.room = ""; appState.customDesc = ""; appState.customCost = 0.00; appState.customW = 36; appState.customH = 84;
+                renderUI(); updateCosting();
+            }
+            saveTally();
+        }
+
+        function editItem(i) {
+            editingIndex = i;
+            appState = JSON.parse(JSON.stringify(projectTally[i].state));
+            
+            const btnAdd = document.getElementById('btnMainAdd');
+            btnAdd.innerHTML = '💾 Update Quote Item'; btnAdd.classList.add('editing');
+            document.getElementById('btnCancelEdit').classList.remove('hidden');
+
+            renderUI(); updateCosting(); window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelEdit() {
+            editingIndex = null;
+            const btnAdd = document.getElementById('btnMainAdd');
+            btnAdd.innerHTML = '+ Build & Add to Quote'; btnAdd.classList.remove('editing');
+            document.getElementById('btnCancelEdit').classList.add('hidden');
+            
+            appState.qty = 1; appState.room = "";
+            renderUI(); updateCosting();
+        }
+
+        function startNewProject() {
+            if (projectTally.length > 0) {
+                const confirmClear = confirm("Are you sure you want to clear the current quote? All unsaved progress will be lost.");
+                if (!confirmClear) return;
+            }
+            projectTally = []; saveTally(); 
+            if (editingIndex !== null) cancelEdit();
+            resetConfigurator();
+            if (viewMode === 'fullquote') toggleFullQuote();
+            showToast("New Project Started"); window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderSidebar() {
+            const listEl = document.getElementById('sidebarItemsList');
+            let grandTotal = 0;
+
+            if (projectTally.length === 0) {
+                listEl.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px 0; font-size: 0.9rem;">No items built yet.</div>';
+                document.getElementById('sidebarTotalCount').innerText = '0 Items'; document.getElementById('sidebarGrandTotal').innerText = '$0.00';
+                if (viewMode === 'fullquote') renderFullQuote(); return;
+            }
+
+            listEl.innerHTML = '';
+            projectTally.forEach((item, i) => {
+                if (!item.config) return; 
+                const generated = calculatePricingAndBOM(item.config, item.qty);
+                grandTotal += generated.price;
+                listEl.innerHTML += `
+                    <div class="cart-item">
+                        <div class="cart-item-header"><span class="cart-item-qty">${item.qty}x</span><span class="cart-item-price">$${generated.price.toFixed(2)}</span></div>
+                        <input type="text" class="edit-room-input" value="${(item.room||'').replace(/"/g, '&quot;')}" placeholder="Room Name" onkeyup="debouncedUpdateRoom(${i}, this.value)">
+                        <div class="cart-item-desc">${generated.desc}</div>
+                        <div class="cart-item-actions">
+                            <button class="action-btn" title="Move Up" onclick="moveItemUp(${i})" ${i === 0 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''}>↑</button>
+                            <button class="action-btn" title="Move Down" onclick="moveItemDown(${i})" ${i === projectTally.length - 1 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''}>↓</button>
+                            <button class="action-btn" onclick="editItem(${i})">Edit</button>
+                            <button class="action-btn" onclick="duplicateItem(${i})">Copy</button>
+                            <button class="action-btn btn-delete" onclick="deleteItem(${i})">Remove</button>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('sidebarTotalCount').innerText = `${projectTally.length} Items`;
+            document.getElementById('sidebarGrandTotal').innerText = '$' + grandTotal.toFixed(2);
+            if (viewMode === 'fullquote') renderFullQuote();
+        }
+
+        const debouncedUpdateRoom = debounce((i, val) => { if(projectTally[i]) { projectTally[i].room = val; projectTally[i].state.room = val; saveTally(); } }, 500);
+        function duplicateItem(i) { if(projectTally[i]) { let c = JSON.parse(JSON.stringify(projectTally[i])); c.id = Math.random().toString(36).substr(2,9); c.room += " (Copy)"; c.state.room = c.room; projectTally.push(c); saveTally(); setTimeout(()=>document.getElementById('sidebarItemsList').scrollTop = 9999, 50); } }
+        function deleteItem(i) { projectTally.splice(i, 1); saveTally(); }
+        function moveItemUp(i) { if (i <= 0) return; const t = projectTally[i]; projectTally[i] = projectTally[i - 1]; projectTally[i - 1] = t; saveTally(); }
+        function moveItemDown(i) { if (i >= projectTally.length - 1) return; const t = projectTally[i]; projectTally[i] = projectTally[i + 1]; projectTally[i + 1] = t; saveTally(); }
+
+        // Save/Load
+        function saveTally() { localStorage.setItem('sd_projectTally', JSON.stringify(projectTally)); renderSidebar(); }
+        function exportProject() {
+            if (projectTally.length === 0) return alert("Your cart is empty. There is nothing to save.");
+            const blob = new Blob([JSON.stringify(projectTally, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url;
+            const d = new Date(); a.download = `SimplyDoors-Quote-${d.getFullYear()}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getDate().toString().padStart(2,'0')}.json`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); showToast("Project Saved Successfully!");
+        }
+        function importProject(event) {
+            const file = event.target.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (!Array.isArray(importedData)) throw new Error("Invalid format");
+                    projectTally = projectTally.length > 0 ? (confirm("Append loaded project? Cancel to overwrite.") ? projectTally.concat(importedData) : importedData) : importedData;
+                    loadTally(); showToast("Project Loaded Successfully!");
+                } catch (error) { alert("Error loading project file."); }
+                event.target.value = ""; 
+            };
+            reader.readAsText(file);
+        }
+
+        // Bulk Modal Logic
+        function openBulkModal() { document.getElementById('bulkModal').style.display = 'flex'; }
+        function closeBulkModal() { document.getElementById('bulkModal').style.display = 'none'; }
+        function applyBulkUpdates() {
+            let updates = false;
+            const vals = { margin: document.getElementById('bulkMargin').value, height: document.getElementById('bulkHeight').value, jambSize: document.getElementById('bulkJambSize').value, jambFinish: document.getElementById('bulkJambFinish').value, material: document.getElementById('bulkMaterial').value, mShape: document.getElementById('bulkMoldedShape').value, sShape: document.getElementById('bulkSimpsonShape').value, fShape: document.getElementById('bulkFlushShape').value, stdCore: document.getElementById('bulkStdCore').value, simpCore: document.getElementById('bulkSimpsonCore').value, hFinish: document.getElementById('bulkHingeFinish').value, hShape: document.getElementById('bulkHingeShape').value, tProf: document.getElementById('bulkTrimProfile').value, tApp: document.getElementById('bulkTrimApp').value };
+
+            projectTally.forEach(item => {
+                if (!item.state || item.state.mode === 'misc') return; 
+                let st = item.state;
+                if (vals.margin) { st.margin = parseFloat(vals.margin); updates = true; }
+                if (vals.height) { st.height = vals.height; updates = true; }
+                if (vals.jambSize) { st.jambSize = vals.jambSize; updates = true; }
+                if (vals.jambFinish) { st.jambFinish = vals.jambFinish; updates = true; }
+                
+                if (vals.material) {
+                    st.material = vals.material; updates = true;
+                    if(vals.material === 'Simpson' && (!st.simpsonThickness || !st.simpsonThickness.includes('_'))) st.simpsonThickness = '1-3/8_std';
+                    if(vals.material !== 'Simpson') st.core = 'HC';
+                    if(vals.material === 'Simpson' && !pricingDB.simpson[st.shapeSimpson]) st.shapeSimpson = '1 Panel Shaker';
+                }
+
+                if (st.material !== 'Custom') {
+                    if (st.material === 'Molded' && vals.mShape) { st.shapeMolded = vals.mShape; updates = true; }
+                    if (st.material === 'Simpson' && vals.sShape) { st.shapeSimpson = vals.sShape; updates = true; }
+                    if (st.material === 'Flush' && vals.fShape) { st.shapeFlush = vals.fShape; updates = true; }
+                    if (st.material !== 'Simpson' && vals.stdCore) { st.core = vals.stdCore; updates = true; }
+                    if (st.material === 'Simpson' && vals.simpCore) { st.simpsonThickness = vals.simpCore; updates = true; }
+                }
+
+                if (vals.hFinish) { st.hingeFinish = vals.hFinish; updates = true; }
+                if (vals.hShape) { st.hingeShape = vals.hShape; updates = true; }
+                if (vals.tProf) {
+                    st.trimProfile = vals.tProf; updates = true;
+                    if (vals.tProf !== 'none' && trimPricingDB[vals.tProf]?.width > 2.5 && st.trimApplication === 'applied') st.trimApplication = 'cut';
+                }
+                if (vals.tApp) {
+                    if (st.trimProfile !== 'none') st.trimApplication = (trimPricingDB[st.trimProfile]?.width > 2.5 && vals.tApp === 'applied') ? 'cut' : vals.tApp;
+                    else st.trimApplication = vals.tApp;
+                    updates = true;
+                }
+                item.config = buildConfig(st);
+            });
+
+            if (updates) {
+                saveTally(); 
+                ['bulkMargin', 'bulkHeight', 'bulkJambSize', 'bulkJambFinish', 'bulkMaterial', 'bulkMoldedShape', 'bulkSimpsonShape', 'bulkFlushShape', 'bulkStdCore', 'bulkSimpsonCore', 'bulkHingeFinish', 'bulkHingeShape', 'bulkTrimProfile', 'bulkTrimApp'].forEach(id => document.getElementById(id).value = "");
+                showToast("Project Bulk Updated!");
+            }
+            closeBulkModal();
+        }
+
+        // ==========================================
+        // QUOTE VIEWS & COPY ACTIONS
+        // ==========================================
+        function toggleFullQuote() {
+            const cView = document.getElementById('mainConfigView'), qView = document.getElementById('fullQuoteView'), btn = document.getElementById('btnToggleQuote');
+            if (viewMode === 'configurator') { viewMode = 'fullquote'; cView.classList.add('hidden'); qView.style.display = 'block'; btn.innerText = "Back to Configurator"; renderFullQuote(); }
+            else { viewMode = 'configurator'; qView.style.display = 'none'; cView.classList.remove('hidden'); btn.innerText = "View Full Quote"; }
+        }
+        function switchQuoteTab(name) {
+            document.getElementById('tabCustomer').classList.toggle('active', name === 'customer'); document.getElementById('tabProduction').classList.toggle('active', name === 'production');
+            document.getElementById('contentCustomer').classList.toggle('hidden', name !== 'customer'); document.getElementById('contentProduction').classList.toggle('hidden', name !== 'production');
+        }
+        function copyText(btn, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const orig = btn.innerText; btn.innerText = 'Copied!'; btn.classList.add('copied');
+                setTimeout(() => { btn.innerText = orig; btn.classList.remove('copied'); }, 2000);
+            });
+        }
+        function copyCustomerRow(btn, index) {
+            const item = projectTally[index]; if (!item || !item.config) return;
+            const gen = calculatePricingAndBOM(item.config, item.qty);
+            copyText(btn, `Room: ${item.room || "None"}\nDescription:\n${gen.desc.replace(/<br\s*[\/]?>/gi, '\n').replace(/<[^>]+>/g, '').trim()}\nQty: ${item.qty}\nUnit Price: $${(gen.price/item.qty).toFixed(2)}\nTotal: $${gen.price.toFixed(2)}`);
+        }
+        function copyProductionRow(btn, idx) { if (window.currentBOMData[idx]) copyText(btn, window.currentBOMData[idx]); }
+        function copyEntireTable(tId, btn) {
+            let txt = tId === 'customerTable' ? "CUSTOMER PROPOSAL\n\n" : "PRODUCTION BOM\n\n"; let aggBOM = {};
+            projectTally.forEach(item => {
+                if (!item.config) return; const gen = calculatePricingAndBOM(item.config, item.qty);
+                if (tId === 'customerTable') txt += `Room: ${item.room || "None"}\nDescription:\n${gen.desc.replace(/<br\s*[\/]?>/gi, '\n').replace(/<[^>]+>/g, '').trim()}\nQty: ${item.qty}\nUnit Price: $${(gen.price/item.qty).toFixed(2)}\nTotal: $${gen.price.toFixed(2)}\n\n`;
+                else gen.bom.forEach(p => { aggBOM[p.name] = (aggBOM[p.name] || 0) + p.qty; });
+            });
+            if (tId === 'customerTable') txt += `GRAND TOTAL: ${document.getElementById('fullQuoteGrandTotal').innerText}`;
+            else Object.keys(aggBOM).sort().forEach(k => txt += `${k} - Qty: ${aggBOM[k]}\n`);
+            copyText(btn, txt);
+        }
+
+        function renderFullQuote() {
+            const cTb = document.querySelector('#customerTable tbody'), pTb = document.querySelector('#productionTable tbody');
+            cTb.innerHTML = ''; pTb.innerHTML = ''; window.currentBOMData = {};
+
+            if (projectTally.length === 0) { 
+                cTb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">No items configured yet.</td></tr>`; 
+                pTb.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:30px; color:var(--text-muted);">No materials to order.</td></tr>`; 
+                document.getElementById('fullQuoteGrandTotal').innerText = "$0.00"; return; 
+            }
+
+            let gTot = 0, aggBOM = {};
+            projectTally.forEach((item, i) => {
+                if (!item.config) return;
+                const gen = calculatePricingAndBOM(item.config, item.qty);
+                gTot += gen.price;
+                cTb.innerHTML += `<tr>
+                    <td><button class="btn-copy" onclick="copyCustomerRow(this, ${i})">Copy</button></td>
+                    <td style="font-weight:700; color:var(--brand-primary);">${item.room || "None"}</td>
+                    <td style="line-height:1.5; font-size:0.9rem;">${gen.desc}</td>
+                    <td style="text-align:center; font-weight:bold;">${item.qty}</td>
+                    <td style="text-align:right;">$${(gen.price/item.qty).toFixed(2)}</td>
+                    <td style="text-align:right; font-weight:bold;">$${gen.price.toFixed(2)}</td>
+                </tr>`;
+                gen.bom.forEach(p => aggBOM[p.name] = (aggBOM[p.name] || 0) + p.qty);
+            });
+
+            document.getElementById('fullQuoteGrandTotal').innerText = "$" + gTot.toFixed(2);
+            Object.keys(aggBOM).sort().forEach((k, idx) => {
+                window.currentBOMData[idx] = `${k} - Qty: ${aggBOM[k]}`;
+                pTb.innerHTML += `<tr>
+                    <td><button class="btn-copy" onclick="copyProductionRow(this, ${idx})">Copy</button></td>
+                    <td style="font-weight:600;">${k}</td>
+                    <td style="text-align:center; font-weight:800; color:var(--brand-primary);">${aggBOM[k]}</td>
+                </tr>`;
+            });
+        }
 
         // ==========================================
         // INITIALIZATION
