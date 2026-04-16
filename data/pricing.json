@@ -2431,7 +2431,7 @@
     }
   ],
   "systemConstants": {
-    "trimLaborCut": 99,
+    "trimLaborCut": 7,
     "trimLaborApplied": 15,
     "whiteOakJamb4": 94.1,
     "whiteOakJamb6": 126.9,
