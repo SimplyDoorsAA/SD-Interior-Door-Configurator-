@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SimplyDoors | Live Pricing Admin</title>
+    <title>SimplyDoors | Pricing Admin</title>
     <style>
         :root {
             --brand-bg: #0f172a; --brand-panel: #1e293b;
@@ -45,54 +45,40 @@
         .status-error { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; display: block; }
         .status-loading { background: #fef08a; color: #854d0e; border: 1px solid #facc15; display: block; }
 
-        /* Table Editor Styles */
         .editor-container { padding: 20px; overflow-x: auto; max-height: 70vh; overflow-y: auto; }
         table { width: 100%; border-collapse: collapse; min-width: 800px; }
         th, td { border: 1px solid var(--border-color); padding: 8px; text-align: left; }
         th { background: rgba(0,0,0,0.3); color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; position: sticky; top: 0; z-index: 10; }
         td input { border: none; background: transparent; color: var(--text-main); font-family: monospace; width: 100%; padding: 5px; outline: none; }
-        td input:focus { background: rgba(5, 150, 105, 0.15); }
-        tr:hover { background: rgba(255,255,255,0.02); }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <header>
-            <h1>Simply<span>Doors</span> | Pricing Admin</h1>
-        </header>
-
+        <header><h1>Simply<span>Doors</span> | Pricing Admin</h1></header>
         <div class="grid">
             <aside>
                 <div class="panel">
                     <div class="panel-header"><span>Connection</span></div>
                     <div class="control-group">
                         <label>GitHub PAT Token</label>
-                        <input type="password" id="githubToken" placeholder="ghp_xxxxxxxxxxxx">
+                        <input type="password" id="githubToken" placeholder="ghp_xxxxxxxx">
                     </div>
                     <div class="control-group" style="border: none;">
                         <button class="btn-primary" id="fetchBtn" onclick="fetchLiveDatabase()">Fetch Live Data</button>
                     </div>
                 </div>
-
                 <div id="statusMessage" class="status-box"></div>
-
-                <div class="panel" id="publishPanel" style="display: none; border-color: var(--brand-primary);">
-                    <div class="panel-header" style="background: rgba(5, 150, 105, 0.1);"><span>Publish Updates</span></div>
+                <div class="panel" id="publishPanel" style="display: none;">
+                    <div class="panel-header"><span>Publish Updates</span></div>
                     <div class="control-group">
-                        <label>Deployment</label>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Pushing will update the JSON file in your repository immediately.</p>
-                    </div>
-                    <div class="control-group" style="border: none;">
                         <button class="btn-primary" id="pushBtn" onclick="pushToGitHub()">Publish Changes</button>
                     </div>
                 </div>
             </aside>
-
             <main class="panel" id="editorPanel" style="opacity: 0.3; pointer-events: none;">
                 <div class="panel-header">
-                    <span>Active Dataset Editor</span>
-                    <select id="dataType" onchange="renderTable()" style="width: auto; padding: 4px 10px; font-size: 0.85rem;">
+                    <span>Editor</span>
+                    <select id="dataType" onchange="renderTable()">
                         <option value="pricingDB">Door Slabs (Main DB)</option>
                         <option value="productionAdders">Production Adders</option>
                         <option value="trimPricingDB">Trim Pricing</option>
@@ -104,10 +90,7 @@
                         <tbody id="tableBody"></tbody>
                     </table>
                 </div>
-                <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                    <button class="btn-secondary" onclick="addRow()">+ Add New Row</button>
-                    <span style="font-size: 0.8rem; color: var(--text-muted);">Rows are auto-mapped to nested JSON keys on save.</span>
-                </div>
+                <div style="padding: 15px;"><button class="btn-secondary" onclick="addRow()">+ Add New Row</button></div>
             </main>
         </div>
     </div>
@@ -116,33 +99,28 @@
         const REPO_OWNER = "SimplyDoorsAA";
         const REPO_NAME = "SD-Interior-Door-Configurator-";
         const FILE_PATH = "data/pricing.json";
-
         let fullLiveDatabase = null;
         let currentFileSha = null;
 
         function showStatus(msg, type) {
             const box = document.getElementById('statusMessage');
-            box.innerText = msg;
-            box.className = `status-box status-${type}`;
+            box.innerText = msg; box.className = `status-box status-${type}`;
         }
 
         async function fetchLiveDatabase() {
             const token = document.getElementById('githubToken').value.trim();
             if (!token) return showStatus("Token Required", "error");
-
             showStatus("Connecting...", "loading");
             try {
                 const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
                 const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (!res.ok) throw new Error("Connection failed.");
                 const data = await res.json();
                 currentFileSha = data.sha;
                 fullLiveDatabase = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-
                 document.getElementById('editorPanel').style.opacity = '1';
                 document.getElementById('editorPanel').style.pointerEvents = 'auto';
                 document.getElementById('publishPanel').style.display = 'block';
-                showStatus("Connected & Data Loaded", "success");
+                showStatus("Data Loaded", "success");
                 renderTable();
             } catch (e) { showStatus(e.message, "error"); }
         }
@@ -152,19 +130,18 @@
             const head = document.getElementById('tableHeader');
             const body = document.getElementById('tableBody');
             head.innerHTML = ''; body.innerHTML = '';
-
             const db = fullLiveDatabase[type];
 
             if (type === 'productionAdders') {
-                head.innerHTML = `<tr><th>Service Name</th><th>Cost ($)</th><th>Action</th></tr>`;
+                head.innerHTML = `<tr><th>Service</th><th>Cost</th><th>Action</th></tr>`;
                 db.forEach(a => appendRow([a.name, a.cost]));
             } else if (type === 'trimPricingDB') {
-                head.innerHTML = `<tr><th>Profile Name</th><th>Width (In)</th><th>Price / Stick ($)</th><th>Action</th></tr>`;
+                head.innerHTML = `<tr><th>Profile</th><th>Width</th><th>Price</th><th>Action</th></tr>`;
                 for (let k in db) appendRow([k, db[k].width, db[k].pricePerStick]);
             } else if (type === 'pricingDB') {
                 head.innerHTML = `<tr><th>Material</th><th>Shape</th><th>Height</th><th>Core</th><th>Width</th><th>Tier 1</th><th>Tier 2</th><th>Tier 3</th><th>Action</th></tr>`;
                 for (let mat in db) {
-                    if (mat === 'simpson' || mat === 'simpsonWhiteOak') {
+                    if (mat.includes('simpson')) {
                         for (let sh in db[mat]) {
                             for (let ht in db[mat][sh]) {
                                 for (let cr in db[mat][sh][ht]) {
@@ -178,7 +155,7 @@
                     } else {
                         for (let ht in db[mat]) {
                             for (let cr in db[mat][ht]) {
-                                for (let wd in db[mat][ht][core]) {
+                                for (let wd in db[mat][ht][cr]) {
                                     let t = db[mat][ht][cr][wd];
                                     appendRow([mat, "", ht, cr, wd, t[0], t[1], t[2]]);
                                 }
@@ -221,7 +198,7 @@
                 rows.forEach(r => {
                     const i = r.querySelectorAll('input');
                     const [mat, sh, ht, cr, wd, t1, t2, t3] = Array.from(i).map(x => x.value);
-                    if (!mat) return;
+                    if (!mat || !ht || !wd) return;
                     if (!obj[mat]) obj[mat] = {};
                     if (mat.includes('simpson')) {
                         if (!obj[mat][sh]) obj[mat][sh] = {};
@@ -243,7 +220,6 @@
             const type = document.getElementById('dataType').value;
             const btn = document.getElementById('pushBtn');
             btn.disabled = true; showStatus("Saving...", "loading");
-
             try {
                 fullLiveDatabase[type] = collect();
                 const content = btoa(unescape(encodeURIComponent(JSON.stringify(fullLiveDatabase, null, 2))));
@@ -251,12 +227,11 @@
                 const res = await fetch(url, {
                     method: 'PUT',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: `Admin: Edit ${type}`, content, sha: currentFileSha })
+                    body: JSON.stringify({ message: `Admin: Update ${type}`, content, sha: currentFileSha })
                 });
-                if (!res.ok) throw new Error("Push failed.");
                 const result = await res.json();
                 currentFileSha = result.content.sha;
-                showStatus("Live Pricing Updated!", "success");
+                showStatus("Success!", "success");
             } catch (e) { showStatus(e.message, "error"); }
             btn.disabled = false;
         }
