@@ -29,6 +29,9 @@
         
         select, input[type="password"], input[type="text"], input[type="number"] { width: 100%; padding: 10px; background: var(--brand-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; outline: none; }
         select:focus, input:focus { border-color: var(--brand-primary); }
+        
+        /* Custom Checkbox for Remember Me */
+        input[type="checkbox"] { width: auto; transform: scale(1.2); accent-color: var(--brand-primary); cursor: pointer; }
 
         .btn-primary { background: var(--brand-primary); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; text-transform: uppercase;}
         .btn-primary:hover { background: var(--brand-accent); }
@@ -60,10 +63,17 @@
         <div class="grid">
             <aside>
                 <div class="panel">
-                    <div class="panel-header"><span>Connection</span></div>
+                    <div class="panel-header">
+                        <span>Connection</span>
+                        <button id="logoutBtn" class="btn-danger" style="display:none; padding: 4px 8px; font-size: 0.75rem;" onclick="logout()">Disconnect</button>
+                    </div>
                     <div class="control-group">
                         <label>GitHub PAT Token</label>
                         <input type="password" id="githubToken" placeholder="ghp_xxxxxxxx">
+                        <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="rememberMe">
+                            <label for="rememberMe" style="margin: 0; display: inline-block; text-transform: none; color: var(--text-main); font-weight: normal; cursor: pointer;">Remember securely on this device</label>
+                        </div>
                     </div>
                     <div class="control-group" style="border: none;">
                         <button class="btn-primary" id="fetchBtn" onclick="fetchLiveDatabase()">Fetch Live Data</button>
@@ -80,7 +90,7 @@
             <main class="panel" id="editorPanel" style="opacity: 0.3; pointer-events: none;">
                 <div class="panel-header">
                     <span>Editor</span>
-                    <select id="dataType" onchange="renderTable()" style="padding: 5px; font-size: 0.9rem;">
+                    <select id="dataType" onchange="renderTable()" style="padding: 5px; font-size: 0.9rem; width: auto; min-width: 300px;">
                         <option value="pricingDB">Door Slabs (Main DB)</option>
                         <option value="productionAdders">Production Adders & Labor</option>
                         <option value="trimPricingDB">Trim Pricing</option>
@@ -108,9 +118,36 @@
         let fullLiveDatabase = null;
         let currentFileSha = null;
 
+        // Auto-Load Sequence
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedToken = localStorage.getItem('sd_github_token');
+            if (savedToken) {
+                document.getElementById('githubToken').value = savedToken;
+                document.getElementById('rememberMe').checked = true;
+                fetchLiveDatabase(); // Seamless login
+            }
+        });
+
         function showStatus(msg, type) {
             const box = document.getElementById('statusMessage');
             box.innerText = msg; box.className = `status-box status-${type}`;
+        }
+
+        function logout() {
+            localStorage.removeItem('sd_github_token');
+            document.getElementById('githubToken').value = '';
+            document.getElementById('rememberMe').checked = false;
+            document.getElementById('logoutBtn').style.display = 'none';
+            
+            // Lock down UI
+            document.getElementById('editorPanel').style.opacity = '0.3';
+            document.getElementById('editorPanel').style.pointerEvents = 'none';
+            document.getElementById('publishPanel').style.display = 'none';
+            document.getElementById('tableHeader').innerHTML = '';
+            document.getElementById('tableBody').innerHTML = '';
+            showStatus("Disconnected. Please enter a token.", "error");
+            fullLiveDatabase = null;
+            currentFileSha = null;
         }
 
         async function fetchLiveDatabase() {
@@ -121,15 +158,28 @@
                 const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
                 const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
                 if (!res.ok) throw new Error("Connection failed. Check your token.");
+                
+                // Connection successful: Handle Memory
+                if (document.getElementById('rememberMe').checked) {
+                    localStorage.setItem('sd_github_token', token);
+                } else {
+                    localStorage.removeItem('sd_github_token');
+                }
+                document.getElementById('logoutBtn').style.display = 'block';
+
                 const data = await res.json();
                 currentFileSha = data.sha;
                 fullLiveDatabase = JSON.parse(decodeURIComponent(escape(atob(data.content))));
+                
                 document.getElementById('editorPanel').style.opacity = '1';
                 document.getElementById('editorPanel').style.pointerEvents = 'auto';
                 document.getElementById('publishPanel').style.display = 'block';
-                showStatus("Data Loaded", "success");
+                showStatus("Data Loaded Successfully", "success");
                 renderTable();
-            } catch (e) { showStatus(e.message, "error"); }
+            } catch (e) { 
+                showStatus(e.message, "error"); 
+                document.getElementById('logoutBtn').style.display = 'none';
+            }
         }
 
         function renderTable() {
@@ -145,20 +195,12 @@
 
             if (type === 'systemConstants') {
                 head.innerHTML = `<tr><th>Constant Name (Code Key)</th><th>Value (Number)</th><th>Action</th></tr>`;
-                // If systemConstants doesn't exist yet, seed it with the hardcoded values including labor points
                 if (!db || Object.keys(db).length === 0) {
                     fullLiveDatabase['systemConstants'] = {
-                        "trimLaborCut": 7.00,
-                        "trimLaborApplied": 15.00,
-                        "whiteOakJamb4": 94.10,
-                        "whiteOakJamb6": 126.90,
-                        "whiteOakHingeUpcharge": 12.98,
-                        "doubleHardware68": 30.87,
-                        "doubleHardware80RHA": 42.13,
-                        "doubleHardware80LHA": 35.26,
-                        "laborPointValueMinutes": 5.0,
-                        "laborTrimCut": 5.0,
-                        "laborTrimApplied": 10.0
+                        "trimLaborCut": 7.00, "trimLaborApplied": 15.00,
+                        "whiteOakJamb4": 94.10, "whiteOakJamb6": 126.90, "whiteOakHingeUpcharge": 12.98,
+                        "doubleHardware68": 30.87, "doubleHardware80RHA": 42.13, "doubleHardware80LHA": 35.26,
+                        "laborPointValueMinutes": 5.0, "laborTrimCut": 5.0, "laborTrimApplied": 10.0
                     };
                     db = fullLiveDatabase['systemConstants'];
                 }
@@ -210,7 +252,6 @@
 
         function addRow() {
             const type = document.getElementById('dataType').value;
-            // systemConstants requires 2 fields; productionAdders and trimPricingDB require 3; pricingDB requires 8
             const count = type === 'systemConstants' ? 2 : (type === 'productionAdders' || type === 'trimPricingDB' ? 3 : 8);
             appendRow(Array(count).fill(""));
         }
@@ -234,7 +275,6 @@
             
             let addedCount = 0;
             defaults.forEach(def => {
-                // Check if it already exists to prevent duplicates
                 const exists = fullLiveDatabase['productionAdders'].find(a => a.name === def.name);
                 if (!exists) {
                     fullLiveDatabase['productionAdders'].push(def);
