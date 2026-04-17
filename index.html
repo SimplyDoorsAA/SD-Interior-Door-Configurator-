@@ -1746,6 +1746,42 @@
             copyText(btn, txt);
         }
 
+        // ==========================================
+        // DYNAMIC SVG DIAGRAM GENERATOR
+        // ==========================================
+        function generateSwingDiagram(handing, mode) {
+            if (mode === 'misc' || mode === 'slab_only' || mode === 'cased_opening' || handing === 'No Hand') return '';
+
+            let svg = `<svg viewBox="0 0 100 100" style="width: 100%; max-width: 120px; stroke: var(--brand-dark); stroke-width: 3; fill: none; overflow: visible;">
+                         <path d="M 5,80 L 95,80" stroke-width="4" stroke-linecap="round" />`;
+
+            if (mode === 'single') {
+                if (handing === 'LH') {
+                    svg += `<path d="M 20,80 L 20,20" /> <path d="M 80,80 A 60 60 0 0 0 20 20" stroke-dasharray="5,5" stroke="#94a3b8" /> <circle cx="20" cy="80" r="4" fill="var(--brand-dark)" /> <text x="50" y="15" font-size="12" stroke="none" fill="var(--brand-primary)" font-weight="bold" font-family="sans-serif">LH</text>`;
+                } else if (handing === 'RH') {
+                    svg += `<path d="M 80,80 L 80,20" />
+                            <path d="M 20,80 A 60 60 0 0 1 80 20" stroke-dasharray="5,5" stroke="#94a3b8" />
+                            <circle cx="80" cy="80" r="4" fill="var(--brand-dark)" />
+                            <text x="35" y="15" font-size="12" stroke="none" fill="var(--brand-primary)" font-weight="bold" font-family="sans-serif">RH</text>`;
+                }
+            } else if (mode === 'double') {
+                // Double Doors (LHA / RHA)
+                svg += `<path d="M 15,80 L 15,40" /> <path d="M 50,80 A 35 35 0 0 0 15 40" stroke-dasharray="4,4" stroke="#94a3b8" />
+                        <circle cx="15" cy="80" r="3" fill="var(--brand-dark)" />
+                        <path d="M 85,80 L 85,40" /> <path d="M 50,80 A 35 35 0 0 1 85 40" stroke-dasharray="4,4" stroke="#94a3b8" />
+                        <circle cx="85" cy="80" r="3" fill="var(--brand-dark)" />`;
+                        
+                if (handing === 'LHA') {
+                    svg += `<text x="5" y="30" font-size="10" stroke="none" fill="var(--brand-accent)" font-weight="bold" font-family="sans-serif">ACTIVE</text>`;
+                } else if (handing === 'RHA') {
+                    svg += `<text x="60" y="30" font-size="10" stroke="none" fill="var(--brand-accent)" font-weight="bold" font-family="sans-serif">ACTIVE</text>`;
+                }
+            }
+            
+            svg += `</svg>`;
+            return svg;
+        }
+
         function renderFullQuote() {
             const cTb = document.querySelector('#customerTable tbody');
             const pTb = document.querySelector('#productionTable tbody');
@@ -1809,6 +1845,8 @@
                     if(conf.mode === 'double') hwStr += `<br><span class="text-lg text-brand mt-10" style="display:block;">Double HW: ${conf.handing !== 'No Hand' ? 'Astragal + Flush Bolt' : 'Ball Catch'}</span>`;
                 }
 
+                let swingDiagram = generateSwingDiagram(conf.handing, conf.mode);
+
                 tHtml += `
                 <div class="ticket-card">
                     <div class="ticket-header">
@@ -1821,9 +1859,14 @@
                             <div class="ticket-spec-title">Unit Type & Dimensions</div>
                             <div class="ticket-spec-val text-brand">${typeStr} <br> ${dimStr}</div>
                         </div>
-                        <div class="ticket-spec-box">
-                            <div class="ticket-spec-title">Handing</div>
-                            <div class="ticket-spec-val">${conf.handing || "N/A"}</div>
+                        <div class="ticket-spec-box" style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div class="ticket-spec-title">Handing</div>
+                                <div class="ticket-spec-val">${conf.handing || "N/A"}</div>
+                            </div>
+                            <div style="width: 100px; text-align: right;">
+                                ${swingDiagram}
+                            </div>
                         </div>
                     </div>
 
