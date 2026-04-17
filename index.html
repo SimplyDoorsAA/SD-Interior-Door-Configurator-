@@ -227,6 +227,11 @@
         .ticket-services-title { font-size: 1.4rem; color: #e11d48; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; }
         .ticket-services-list { font-size: 1.6rem; font-weight: bold; color: #9f1239; margin: 0; padding-left: 25px; line-height: 1.5; }
 
+        /* LABOR METRICS CSS */
+        .labor-metric-card { background: #1e293b; color: white; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+        .labor-metric-title { font-size: 0.9rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .labor-metric-val { font-size: 2.5rem; font-weight: 900; color: var(--brand-accent); line-height: 1.2; }
+
         /* Print Media Query */
         @media print {
             @page { size: letter portrait; margin: 0.5in; }
@@ -236,7 +241,7 @@
             .layout-wrapper { display: block; margin: 0; padding: 0; }
             .full-quote-view { display: block !important; margin: 0; padding: 0; max-width: 100%; border: none; box-shadow: none; }
             .quote-card { border: none; box-shadow: none; }
-            #contentCustomer, #contentProduction { display: none !important; }
+            #contentCustomer, #contentProduction, #contentLabor { display: none !important; }
             #contentTicket { display: block !important; padding: 0; }
             
             /* Single Print Logic */
@@ -389,6 +394,7 @@
                 <button class="quote-tab-btn active" id="tabCustomer" onclick="switchQuoteTab('customer')">Customer Facing Quote</button>
                 <button class="quote-tab-btn" id="tabProduction" onclick="switchQuoteTab('production')">Production BOM (Materials)</button>
                 <button class="quote-tab-btn" id="tabTicket" onclick="switchQuoteTab('ticket')">Production Ticket</button>
+                <button class="quote-tab-btn" id="tabLabor" onclick="switchQuoteTab('labor')">Labor Points (Scheduling)</button>
             </div>
             
             <div class="quote-content" id="contentCustomer">
@@ -438,6 +444,46 @@
                 
                 <div id="ticketContainer">
                     </div>
+            </div>
+
+            <div class="quote-content hidden" id="contentLabor">
+                <div class="flex-end mb-20">
+                    <div>
+                        <h3 class="m-0 text-dark">Labor Points Dashboard</h3>
+                        <p class="mt-5 mb-0 text-sm text-muted">Standard minute values and shop capacity requirements.</p>
+                    </div>
+                    <div class="text-right">
+                        <button class="btn-copy-all" onclick="copyEntireTable('laborTable', this)">Copy Labor Schedule</button>
+                    </div>
+                </div>
+
+                <div class="grid-2 mb-20">
+                    <div class="labor-metric-card">
+                        <div class="labor-metric-title">Total Project Points</div>
+                        <div class="labor-metric-val" id="laborTotalPoints">0</div>
+                    </div>
+                    <div class="labor-metric-card">
+                        <div class="labor-metric-title">Estimated Shop Time</div>
+                        <div class="labor-metric-val" id="laborTotalTime">0 Hrs 0 Mins</div>
+                        <div class="text-sm mt-5" style="color: #64748b;" id="laborPointRatio">(1 Point = 5 Minutes)</div>
+                    </div>
+                </div>
+
+                <div class="mb-20">
+                    <h4 class="mb-10 text-dark">Aggregate Operations (Shop Floor Totals)</h4>
+                    <table class="order-table" id="laborAggregateTable">
+                        <thead><tr><th>Labor Operation / Task</th><th style="width:100px; text-align:center;">Total Qty</th><th style="width:120px; text-align:center;">Total Points</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div>
+                    <h4 class="mb-10 text-dark">Room-by-Room Breakdown</h4>
+                    <table class="order-table" id="laborRoomTable">
+                        <thead><tr><th>Room / Item</th><th>Required Labor Operations</th><th style="width:120px; text-align:center;">Unit Points</th><th style="width:80px; text-align:center;">Qty</th><th style="width:120px; text-align:right;">Ext Points</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -910,7 +956,8 @@
                 systemConstants = data.systemConstants || {
                     trimLaborCut: 7.00, trimLaborApplied: 15.00,
                     whiteOakJamb4: 94.10, whiteOakJamb6: 126.90, whiteOakHingeUpcharge: 12.98,
-                    doubleHardware68: 30.87, doubleHardware80RHA: 42.13, doubleHardware80LHA: 35.26
+                    doubleHardware68: 30.87, doubleHardware80RHA: 42.13, doubleHardware80LHA: 35.26,
+                    laborPointValueMinutes: 5.0 // Fallback: 1 point = 5 minutes
                 };
 
                 stevesMatrix = {};
@@ -1246,7 +1293,10 @@
         // ==========================================
 
         function buildConfig(state) {
-            let services = state.services.map(name => { const adder = productionAdders.find(a => a.name === name); return { name: name, cost: adder ? adder.cost : 0 }; });
+            let services = state.services.map(name => { 
+                const adder = productionAdders.find(a => a.name === name); 
+                return { name: name, cost: adder ? adder.cost : 0, points: adder ? (adder.points || 0) : 0 }; 
+            });
             const matConf = MATERIAL_CONFIG[state.material] || MATERIAL_CONFIG['Molded'];
             
             let styleCode = matConf.prefix;
@@ -1325,18 +1375,24 @@
         }
 
         function calcTrim(config, sysW, sysH, qty) {
-            if (config.mode === 'misc' || config.mode === 'slab_only' || !config.trimProfile || config.trimProfile === 'none') return { mat: 0, lab: 0, sticks: 0 };
+            if (config.mode === 'misc' || config.mode === 'slab_only' || !config.trimProfile || config.trimProfile === 'none') return { mat: 0, lab: 0, sticks: 0, points: 0 };
             const tData = trimPricingDB[config.trimProfile];
-            if (!tData) return { mat: 0, lab: 0, sticks: 0 };
+            if (!tData) return { mat: 0, lab: 0, sticks: 0, points: 0 };
 
             const totalInches = (sysW + (sysH * 2) + (tData.width > 0 ? (tData.width * 2) : 0)) * 2 * qty;
             const trimSticks = Math.ceil((totalInches * 1.10) / 168); 
             
             let trimLab = 0;
-            if (config.trimApplication === 'cut') trimLab = systemConstants.trimLaborCut;
-            else if (config.trimApplication === 'applied') trimLab = systemConstants.trimLaborApplied;
+            let trimPoints = 0;
+            if (config.trimApplication === 'cut') {
+                trimLab = systemConstants.trimLaborCut;
+                trimPoints = systemConstants.laborTrimCut || 5; // fallback
+            } else if (config.trimApplication === 'applied') {
+                trimLab = systemConstants.trimLaborApplied;
+                trimPoints = systemConstants.laborTrimApplied || 10; // fallback
+            }
 
-            return { mat: (trimSticks * tData.pricePerStick) / qty, lab: trimLab, sticks: trimSticks };
+            return { mat: (trimSticks * tData.pricePerStick) / qty, lab: trimLab, sticks: trimSticks, points: trimPoints };
         }
 
         function buildOutput(config, qty, sysW, sysH, trimSticks) {
@@ -1406,13 +1462,37 @@
             const trimData = calcTrim(config, slabData.sysW, slabData.sysH, qty);
             const addersCost = config.services.reduce((sum, s) => sum + s.cost, 0);
 
+            // Labor Calculation
+            let unitLaborPoints = 0;
+            let laborItems = [];
+            
+            if (trimData.points > 0) {
+                let tName = config.trimApplication === 'cut' ? 'Pre-Cut Trim Processing' : 'Pre-Applied Trim Processing';
+                unitLaborPoints += trimData.points;
+                laborItems.push({ name: tName, points: trimData.points });
+            }
+            
+            config.services.forEach(s => {
+                if (s.points > 0) {
+                    unitLaborPoints += s.points;
+                    laborItems.push({ name: s.name, points: s.points });
+                }
+            });
+
+            // Default baseline points for custom doors without prehang services checked
+            if (config.material === 'Custom' && unitLaborPoints === 0) {
+                unitLaborPoints = 15; // Baseline fallback
+                laborItems.push({ name: "Custom Prep Baseline", points: 15 });
+            }
+
             const unitCost = totalSlabCost + hwCost + trimData.mat + trimData.lab + addersCost;
             const price = config.margin >= 1 ? 0 : (unitCost * qty) / (1 - config.margin);
             const { desc, bom } = buildOutput(config, qty, slabData.sysW, slabData.sysH, trimData.sticks);
 
             return { 
                 valid: slabData.valid || config.mode === 'cased_opening' || config.mode === 'misc' || config.material === 'Custom', 
-                cost: unitCost * qty, price: price, profit: price - (unitCost * qty), markup: unitCost > 0 ? price / (unitCost * qty) : 0, desc: desc, bom: bom 
+                cost: unitCost * qty, price: price, profit: price - (unitCost * qty), markup: unitCost > 0 ? price / (unitCost * qty) : 0, 
+                desc: desc, bom: bom, laborPoints: unitLaborPoints * qty, laborItems: laborItems
             };
         }
 
@@ -1747,10 +1827,12 @@
             document.getElementById('tabCustomer').classList.toggle('active', name === 'customer'); 
             document.getElementById('tabProduction').classList.toggle('active', name === 'production');
             document.getElementById('tabTicket').classList.toggle('active', name === 'ticket');
+            document.getElementById('tabLabor').classList.toggle('active', name === 'labor');
             
             document.getElementById('contentCustomer').classList.toggle('hidden', name !== 'customer'); 
             document.getElementById('contentProduction').classList.toggle('hidden', name !== 'production');
             document.getElementById('contentTicket').classList.toggle('hidden', name !== 'ticket');
+            document.getElementById('contentLabor').classList.toggle('hidden', name !== 'labor');
         }
 
         function copyText(btn, text) {
@@ -1766,14 +1848,42 @@
         }
         function copyProductionRow(btn, idx) { if (window.currentBOMData[idx]) copyText(btn, window.currentBOMData[idx]); }
         function copyEntireTable(tId, btn) {
-            let txt = tId === 'customerTable' ? "CUSTOMER PROPOSAL\n\n" : "PRODUCTION BOM\n\n"; let aggBOM = {};
+            let txt = tId === 'customerTable' ? "CUSTOMER PROPOSAL\n\n" : (tId === 'productionTable' ? "PRODUCTION BOM\n\n" : "LABOR SCHEDULE\n\n"); 
+            let aggBOM = {};
+            
+            if (tId === 'laborTable') {
+                txt += document.getElementById('laborTotalPoints').innerText + " Total Points | " + document.getElementById('laborTotalTime').innerText + "\n\n";
+                // Aggregate
+                let lAgg = {};
+                projectTally.forEach(item => {
+                    if (!item.config) return;
+                    const gen = calculatePricingAndBOM(item.config, item.qty);
+                    gen.laborItems.forEach(l => {
+                        if (!lAgg[l.name]) lAgg[l.name] = { qty: 0, pts: 0 };
+                        lAgg[l.name].qty += item.qty;
+                        lAgg[l.name].pts += (l.points * item.qty);
+                    });
+                });
+                Object.keys(lAgg).sort().forEach(k => txt += `${k} (Qty: ${lAgg[k].qty}) - ${lAgg[k].pts} Pts\n`);
+                txt += "\nROOM BREAKDOWN\n";
+            }
+
             projectTally.forEach(item => {
                 if (!item.config) return; const gen = calculatePricingAndBOM(item.config, item.qty);
-                if (tId === 'customerTable') txt += `Room: ${item.room || "None"}\nDescription:\n${gen.desc.replace(/<br\s*[\/]?>/gi, '\n').replace(/<[^>]+>/g, '').trim()}\nQty: ${item.qty}\nUnit Price: $${(gen.price/item.qty).toFixed(2)}\nTotal: $${gen.price.toFixed(2)}\n\n`;
-                else gen.bom.forEach(p => { aggBOM[p.name] = (aggBOM[p.name] || 0) + p.qty; });
+                if (tId === 'customerTable') {
+                    txt += `Room: ${item.room || "None"}\nDescription:\n${gen.desc.replace(/<br\s*[\/]?>/gi, '\n').replace(/<[^>]+>/g, '').trim()}\nQty: ${item.qty}\nUnit Price: $${(gen.price/item.qty).toFixed(2)}\nTotal: $${gen.price.toFixed(2)}\n\n`;
+                } else if (tId === 'productionTable') {
+                    gen.bom.forEach(p => { aggBOM[p.name] = (aggBOM[p.name] || 0) + p.qty; });
+                } else if (tId === 'laborTable') {
+                    if (gen.laborPoints > 0) {
+                        txt += `Room: ${item.room || "None"} (Qty: ${item.qty})\nOperations: ${gen.laborItems.map(l=>l.name).join(', ')}\nTotal Unit Points: ${gen.laborPoints/item.qty}\nTotal Ext Points: ${gen.laborPoints}\n\n`;
+                    }
+                }
             });
+
             if (tId === 'customerTable') txt += `GRAND TOTAL: ${document.getElementById('fullQuoteGrandTotal').innerText}`;
-            else Object.keys(aggBOM).sort().forEach(k => txt += `${k} - Qty: ${aggBOM[k]}\n`);
+            else if (tId === 'productionTable') Object.keys(aggBOM).sort().forEach(k => txt += `${k} - Qty: ${aggBOM[k]}\n`);
+            
             copyText(btn, txt);
         }
 
@@ -1830,24 +1940,36 @@
             const cTb = document.querySelector('#customerTable tbody');
             const pTb = document.querySelector('#productionTable tbody');
             const tCont = document.getElementById('ticketContainer');
+            const lAggTb = document.querySelector('#laborAggregateTable tbody');
+            const lRoomTb = document.querySelector('#laborRoomTable tbody');
             
-            cTb.innerHTML = ''; pTb.innerHTML = ''; tCont.innerHTML = ''; 
+            cTb.innerHTML = ''; pTb.innerHTML = ''; tCont.innerHTML = ''; lAggTb.innerHTML = ''; lRoomTb.innerHTML = '';
             window.currentBOMData = {};
 
             if (projectTally.length === 0) { 
                 cTb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">No items configured yet.</td></tr>`; 
                 pTb.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:30px; color:var(--text-muted);">No materials to order.</td></tr>`; 
                 tCont.innerHTML = `<div class="text-center text-muted" style="padding: 40px;">No production tickets to generate.</div>`;
-                document.getElementById('fullQuoteGrandTotal').innerText = "$0.00"; return; 
+                lAggTb.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:30px; color:var(--text-muted);">No labor data.</td></tr>`; 
+                lRoomTb.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:var(--text-muted);">No room data.</td></tr>`; 
+                document.getElementById('fullQuoteGrandTotal').innerText = "$0.00"; 
+                document.getElementById('laborTotalPoints').innerText = "0";
+                document.getElementById('laborTotalTime').innerText = "0 Hrs 0 Mins";
+                return; 
             }
 
             let gTot = 0, aggBOM = {};
             let tHtml = '';
+            let totalLaborPts = 0;
+            let laborAggregate = {};
+
+            const pointMultiplier = systemConstants.laborPointValueMinutes || 5.0;
 
             projectTally.forEach((item, i) => {
                 if (!item.config) return;
                 const gen = calculatePricingAndBOM(item.config, item.qty);
                 gTot += gen.price;
+                totalLaborPts += gen.laborPoints;
                 
                 // 1. Customer Proposal
                 cTb.innerHTML += `<tr>
@@ -1862,7 +1984,24 @@
                 // 2. Aggregate Production BOM
                 gen.bom.forEach(p => aggBOM[p.name] = (aggBOM[p.name] || 0) + p.qty);
 
-                // 3. Generate Production Ticket
+                // 3. Labor Room Breakdown & Aggregation
+                if (gen.laborPoints > 0) {
+                    gen.laborItems.forEach(l => {
+                        if (!laborAggregate[l.name]) laborAggregate[l.name] = { qty: 0, pts: 0 };
+                        laborAggregate[l.name].qty += item.qty;
+                        laborAggregate[l.name].pts += (l.points * item.qty);
+                    });
+
+                    lRoomTb.innerHTML += `<tr>
+                        <td style="font-weight:700; color:var(--brand-primary);">${item.room || "None"}</td>
+                        <td style="font-size:0.85rem; color:var(--text-muted);">${gen.laborItems.map(l => `• ${l.name} (${l.points} pts)`).join('<br>')}</td>
+                        <td style="text-align:center; font-weight:bold;">${gen.laborPoints / item.qty}</td>
+                        <td style="text-align:center; font-weight:bold;">${item.qty}</td>
+                        <td style="text-align:right; font-weight:900; color:var(--brand-dark);">${gen.laborPoints}</td>
+                    </tr>`;
+                }
+
+                // 4. Generate Production Ticket
                 const conf = item.config;
                 let typeStr = conf.mode === 'double' ? "Double Door" : (conf.mode === 'bifold' ? "Bifold" : (conf.mode === 'slab_only' ? "Slab Only" : (conf.mode === 'cased_opening' ? "Cased Opening" : (conf.mode === 'misc' ? "Misc Item" : "Single Door"))));
                 let dimStr = conf.material === 'Custom' ? `${conf.customW}" x ${conf.customH}"` : `${conf.width} x ${conf.height === '68' ? "6'8\"" : (conf.height === '70' ? "7'0\"" : "8'0\"")}`;
@@ -1975,7 +2114,15 @@
                 </div>`;
             });
 
+            // 5. Update UI Metrics
             document.getElementById('fullQuoteGrandTotal').innerText = "$" + gTot.toFixed(2);
+            document.getElementById('laborTotalPoints').innerText = totalLaborPts;
+            
+            const totalMins = totalLaborPts * pointMultiplier;
+            const hours = Math.floor(totalMins / 60);
+            const mins = Math.round(totalMins % 60);
+            document.getElementById('laborTotalTime').innerText = `${hours} Hrs ${mins} Mins`;
+            document.getElementById('laborPointRatio').innerText = `(1 Point = ${pointMultiplier} Minutes)`;
             
             Object.keys(aggBOM).sort().forEach((k, idx) => {
                 window.currentBOMData[idx] = `${k} - Qty: ${aggBOM[k]}`;
@@ -1985,6 +2132,18 @@
                     <td style="text-align:center; font-weight:800; color:var(--brand-primary);">${aggBOM[k]}</td>
                 </tr>`;
             });
+
+            Object.keys(laborAggregate).sort().forEach(k => {
+                lAggTb.innerHTML += `<tr>
+                    <td style="font-weight:600;">${k}</td>
+                    <td style="text-align:center; font-weight:bold;">${laborAggregate[k].qty}</td>
+                    <td style="text-align:center; font-weight:900; color:var(--brand-primary);">${laborAggregate[k].pts}</td>
+                </tr>`;
+            });
+
+            if (Object.keys(laborAggregate).length === 0) {
+                lRoomTb.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:var(--text-muted);">No labor points assigned to current items.</td></tr>`;
+            }
 
             tCont.innerHTML = tHtml;
         }
