@@ -27,7 +27,7 @@
         .control-group { padding: 15px 20px; border-bottom: 1px solid var(--border-color); }
         .control-group label { display: block; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
         
-        select, input[type="password"], input[type="text"] { width: 100%; padding: 10px; background: var(--brand-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; outline: none; }
+        select, input[type="password"], input[type="text"], input[type="number"] { width: 100%; padding: 10px; background: var(--brand-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; outline: none; }
         select:focus, input:focus { border-color: var(--brand-primary); }
 
         .btn-primary { background: var(--brand-primary); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; text-transform: uppercase;}
@@ -82,9 +82,9 @@
                     <span>Editor</span>
                     <select id="dataType" onchange="renderTable()" style="padding: 5px; font-size: 0.9rem;">
                         <option value="pricingDB">Door Slabs (Main DB)</option>
-                        <option value="productionAdders">Production Adders</option>
+                        <option value="productionAdders">Production Adders & Labor</option>
                         <option value="trimPricingDB">Trim Pricing</option>
-                        <option value="systemConstants">System Constants (Trim Labor, WO Jambs, etc)</option>
+                        <option value="systemConstants">System Constants (Labor Rates, Jambs, etc)</option>
                     </select>
                 </div>
                 <div class="editor-container">
@@ -144,8 +144,8 @@
             let db = fullLiveDatabase[type];
 
             if (type === 'systemConstants') {
-                head.innerHTML = `<tr><th>Constant Name (Code Key)</th><th>Value ($)</th><th>Action</th></tr>`;
-                // If systemConstants doesn't exist yet, seed it with the hardcoded values found in your Configurator
+                head.innerHTML = `<tr><th>Constant Name (Code Key)</th><th>Value (Number)</th><th>Action</th></tr>`;
+                // If systemConstants doesn't exist yet, seed it with the hardcoded values including labor points
                 if (!db || Object.keys(db).length === 0) {
                     fullLiveDatabase['systemConstants'] = {
                         "trimLaborCut": 7.00,
@@ -155,15 +155,18 @@
                         "whiteOakHingeUpcharge": 12.98,
                         "doubleHardware68": 30.87,
                         "doubleHardware80RHA": 42.13,
-                        "doubleHardware80LHA": 35.26
+                        "doubleHardware80LHA": 35.26,
+                        "laborPointValueMinutes": 5.0,
+                        "laborTrimCut": 5.0,
+                        "laborTrimApplied": 10.0
                     };
                     db = fullLiveDatabase['systemConstants'];
                 }
                 for (let k in db) appendRow([k, db[k]]);
                 
             } else if (type === 'productionAdders') {
-                head.innerHTML = `<tr><th>Service Name</th><th>Cost ($)</th><th>Action</th></tr>`;
-                if (db) db.forEach(a => appendRow([a.name, a.cost]));
+                head.innerHTML = `<tr><th>Service Name</th><th>Cost ($)</th><th>Labor Points</th><th>Action</th></tr>`;
+                if (db) db.forEach(a => appendRow([a.name, a.cost, a.points || 0]));
                 
             } else if (type === 'trimPricingDB') {
                 head.innerHTML = `<tr><th>Profile Name</th><th>Width (In)</th><th>Price / Stick ($)</th><th>Action</th></tr>`;
@@ -207,23 +210,24 @@
 
         function addRow() {
             const type = document.getElementById('dataType').value;
-            const count = type === 'productionAdders' || type === 'systemConstants' ? 2 : (type === 'trimPricingDB' ? 3 : 8);
+            // systemConstants requires 2 fields; productionAdders and trimPricingDB require 3; pricingDB requires 8
+            const count = type === 'systemConstants' ? 2 : (type === 'productionAdders' || type === 'trimPricingDB' ? 3 : 8);
             appendRow(Array(count).fill(""));
         }
 
         function seedDefaultAdders() {
             const defaults = [
-                { name: "Prehang 6'8 Single (Std 4-9/16)", cost: 25.00 },
-                { name: "Prehang 8'0 Single (Std 4-9/16)", cost: 32.00 },
-                { name: "Upcharge to Interior 6-9/16 Jamb", cost: 20.00 },
-                { name: "Prehang 6'8 Double Ball Catch", cost: 55.00 },
-                { name: "Prehang 6'8 Double Flush Bolt", cost: 85.00 },
-                { name: "Prehang 8'0 Double Flush Bolt", cost: 95.00 },
-                { name: "Prehang 8'0 Double Ball Catch", cost: 50.00 },
-                { name: "Upcharge to Primed FJ Jamb", cost: 5.00 },
-                { name: "Slab Cutdown", cost: 10.00 },
-                { name: "Hinge Prep (Per Slab)", cost: 30.00 },
-                { name: "Bore Prep (Per Slab)", cost: 20.00 }
+                { name: "Prehang 6'8 Single (Std 4-9/16)", cost: 25.00, points: 15 },
+                { name: "Prehang 8'0 Single (Std 4-9/16)", cost: 32.00, points: 20 },
+                { name: "Upcharge to Interior 6-9/16 Jamb", cost: 20.00, points: 0 },
+                { name: "Prehang 6'8 Double Ball Catch", cost: 55.00, points: 25 },
+                { name: "Prehang 6'8 Double Flush Bolt", cost: 85.00, points: 35 },
+                { name: "Prehang 8'0 Double Flush Bolt", cost: 95.00, points: 45 },
+                { name: "Prehang 8'0 Double Ball Catch", cost: 50.00, points: 30 },
+                { name: "Upcharge to Primed FJ Jamb", cost: 5.00, points: 0 },
+                { name: "Slab Cutdown", cost: 10.00, points: 10 },
+                { name: "Hinge Prep (Per Slab)", cost: 30.00, points: 15 },
+                { name: "Bore Prep (Per Slab)", cost: 20.00, points: 5 }
             ];
             
             if (!fullLiveDatabase['productionAdders']) fullLiveDatabase['productionAdders'] = [];
@@ -260,7 +264,7 @@
             } else if (type === 'productionAdders') {
                 return Array.from(rows).map(r => {
                     const i = r.querySelectorAll('input');
-                    return { name: i[0].value, cost: parseFloat(i[1].value) || 0 };
+                    return { name: i[0].value, cost: parseFloat(i[1].value) || 0, points: parseFloat(i[2].value) || 0 };
                 });
             } else if (type === 'trimPricingDB') {
                 let obj = {};
