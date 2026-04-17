@@ -1791,26 +1791,28 @@
                 if (conf.services && conf.services.length > 0) {
                     servicesHtml = `
                     <div class="ticket-services">
-                        <div class="ticket-services-title">⚠️ Required Services & Adders</div>
+                        <div class="ticket-services-title">⚠️ REQUIRED SERVICES & ADDERS</div>
                         <ul class="ticket-services-list">
                             ${conf.services.map(s => `<li>${s.name}</li>`).join('')}
                         </ul>
                     </div>`;
                 }
 
-                let slabStr = conf.material === 'Custom' ? (conf.customDesc || "Custom Slab") : (conf.mode === 'cased_opening' ? 'N/A' : `${conf.material} ${conf.shape} <br><span class="text-lg text-muted">Core: ${conf.core}</span>`);
-                let frameStr = conf.mode === 'slab_only' || conf.mode === 'misc' ? 'N/A' : `${conf.jambSize} ${conf.jambFinish === 'white_oak' ? 'White Oak' : (conf.jambFinish === 'primed' ? 'Primed FJ' : 'Raw Pine')} Jamb`;
+                let coreDisplay = conf.core === 'HC' ? 'Hollow Core' : (conf.core === 'SC' ? 'Solid Core' : conf.core);
+                let slabStr = conf.material === 'Custom' ? (conf.customDesc || "Custom Slab") : (conf.mode === 'cased_opening' ? 'N/A' : `${conf.material} - ${conf.shape} <br><span class="text-lg text-muted">Core: ${coreDisplay}</span><br><span class="text-lg text-muted">SKU: ${conf.skuBase}</span>`);
+                
+                let frameStr = conf.mode === 'slab_only' || conf.mode === 'misc' ? 'N/A' : `${conf.jambSize} ${conf.jambFinish === 'white_oak' ? 'White Oak' : (conf.jambFinish === 'primed' ? 'Primed FJ Pine' : 'Raw FJ Pine')} Jamb <br> <span class="text-lg text-muted">${conf.jambFinish === 'white_oak' ? 'White Oak' : (conf.jambFinish === 'primed' ? 'Primed' : 'Raw')} Stop Applied</span>`;
                 
                 let hwStr = 'N/A';
                 if (conf.mode !== 'misc' && conf.mode !== 'cased_opening' && conf.mode !== 'slab_only') {
-                    hwStr = `${conf.activeBore} <br> <span class="text-lg text-muted">${conf.hingeFinish.replace(' Standard Hinge', '')}</span>`;
+                    hwStr = `${conf.activeBore} <br> <span class="text-lg text-muted">${conf.hingeFinish} <br>(${conf.hingeShape.replace(' Hinge Shape', '')})</span>`;
                     if(conf.mode === 'double') hwStr += `<br><span class="text-lg text-brand mt-10" style="display:block;">Double HW: ${conf.handing !== 'No Hand' ? 'Astragal + Flush Bolt' : 'Ball Catch'}</span>`;
                 }
 
                 tHtml += `
                 <div class="ticket-card">
                     <div class="ticket-header">
-                        <div class="ticket-room">${item.room || "No Room Assigned"}</div>
+                        <div class="ticket-room">${item.room || "PRODUCTION TICKET"}</div>
                         <div class="ticket-qty">QTY: ${item.qty}</div>
                     </div>
                     
@@ -1831,8 +1833,8 @@
                             <div class="ticket-spec-val">${slabStr}</div>
                         </div>
                         <div class="ticket-spec-box">
-                            <div class="ticket-spec-title">Frame & Trim</div>
-                            <div class="ticket-spec-val">${frameStr} <br> <span class="text-md text-muted">Trim: ${conf.trimProfile !== 'none' ? conf.trimProfile : 'None'}</span></div>
+                            <div class="ticket-spec-title">Frame & Stop</div>
+                            <div class="ticket-spec-val">${frameStr}</div>
                         </div>
                     </div>
 
