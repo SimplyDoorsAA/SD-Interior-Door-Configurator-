@@ -843,12 +843,11 @@
     <script>
         // ==========================================
         // ARCHITECTURE UPGRADE: MATERIAL CONFIGURATION
-        // Single Source of Truth for Routing Logic
         // ==========================================
         const MATERIAL_CONFIG = {
             "Molded": {
                 pricingKey: "molded", folder: "molded", prefix: "SM",
-                hasPricingShape: false, coreUI: "standard", defaultCore: "HC",
+                hasPricingShape: false, coreUI: "standard", defaultCore: "HC", defaultJamb: "raw",
                 shapes: [
                     { val: "1 Panel Shaker", label: "1 Panel Shaker" },
                     { val: "2 Panel Shaker", label: "2 Panel Shaker" },
@@ -866,7 +865,7 @@
             },
             "Flush": {
                 pricingKey: "flushHB", folder: "flush", prefix: "FLSH",
-                hasPricingShape: false, coreUI: "standard", defaultCore: "HC",
+                hasPricingShape: false, coreUI: "standard", defaultCore: "HC", defaultJamb: "raw",
                 shapes: [
                     { val: "Hardwood", label: "Hardwood (Lauan)" },
                     { val: "Birch", label: "Birch" },
@@ -877,7 +876,7 @@
             },
             "Simpson": {
                 pricingKey: "simpson", folder: "simpson", prefix: "SP",
-                hasPricingShape: true, coreUI: "simpson", defaultCore: "1-3/8_std",
+                hasPricingShape: true, coreUI: "simpson", defaultCore: "1-3/8_std", defaultJamb: "raw",
                 shapes: [
                     { val: "1 Panel Shaker", label: "1 Panel Shaker" },
                     { val: "2 Panel Shaker", label: "2 Panel Shaker" },
@@ -888,7 +887,7 @@
             },
             "Simpson White Oak": {
                 pricingKey: "simpsonWhiteOak", folder: "white-oak", prefix: "SP",
-                hasPricingShape: true, coreUI: "none", defaultCore: "138HC",
+                hasPricingShape: true, coreUI: "none", defaultCore: "138HC", defaultJamb: "white_oak",
                 categories: {
                     "Solid Shaker": [
                         { val: "1 Panel Shaker", label: "1 Panel Shaker (720)" },
@@ -909,7 +908,7 @@
                     ]
                 }
             },
-            "Custom": { pricingKey: "custom", folder: "custom", prefix: "CSTM", hasPricingShape: false, coreUI: "none" }
+            "Custom": { pricingKey: "custom", folder: "custom", prefix: "CSTM", hasPricingShape: false, coreUI: "none", defaultJamb: "raw" }
         };
 
         // ==========================================
@@ -941,7 +940,6 @@
 
         let rawStevesMatrix, stevesMatrix, pricingDB, trimPricingDB, productionAdders, systemConstants;
 
-        // The Fetch Engine
         async function initializeApplication() {
             try {
                 const response = await fetch(`data/pricing.json?v=${new Date().getTime()}`);
@@ -957,7 +955,7 @@
                     trimLaborCut: 7.00, trimLaborApplied: 15.00,
                     whiteOakJamb4: 94.10, whiteOakJamb6: 126.90, whiteOakHingeUpcharge: 12.98,
                     doubleHardware68: 30.87, doubleHardware80RHA: 42.13, doubleHardware80LHA: 35.26,
-                    laborPointValueMinutes: 5.0 // Fallback: 1 point = 5 minutes
+                    laborPointValueMinutes: 5.0
                 };
 
                 stevesMatrix = {};
@@ -1014,9 +1012,8 @@
                 const conf = MATERIAL_CONFIG[val];
                 if (conf) {
                     if (val === 'Simpson' && (!appState.simpsonThickness || !appState.simpsonThickness.includes('_'))) appState.simpsonThickness = '1-3/8_std';
-                    if (val === 'Simpson White Oak') appState.jambFinish = 'white_oak';
+                    appState.jambFinish = conf.defaultJamb;
                     
-                    // Reset shape to first default of new material
                     if (val === 'Simpson White Oak') appState.shape = conf.categories[appState.whiteOakCategory][0].val;
                     else if (val !== 'Custom' && val !== 'misc') appState.shape = conf.shapes[0].val;
                 }
@@ -1289,7 +1286,7 @@
         }
 
         // ==========================================
-        // CONFIG & MATH ENGINE
+        // CONFIG & MATH ENGINE (Optimized)
         // ==========================================
 
         function buildConfig(state) {
@@ -1300,11 +1297,12 @@
             const matConf = MATERIAL_CONFIG[state.material] || MATERIAL_CONFIG['Molded'];
             
             let styleCode = matConf.prefix;
-            if (state.material === 'Molded') styleCode = state.shape.includes('Shaker') ? 'SM' + state.shape.split(' ')[0] + 'P' : 'SM' + state.shape.split(' ')[0] + 'P';
+            if (state.material === 'Molded') styleCode = 'SM' + state.shape.split(' ')[0] + 'P';
             else if (matConf.hasPricingShape) styleCode = 'SP' + (state.shape.match(/\d+/) ? state.shape.match(/\d+/)[0] : 'CSTM');
             
             const w = (state.width || '').replace(/[^0-9]/g, '');
             let coreCode = state.material === 'Simpson' ? (state.simpsonThickness ? state.simpsonThickness.substring(0,3) : '1-3') : (state.core ? state.core.substring(0,3) : 'HC');
+            
             let sku = `${styleCode}-${w}${state.height}-${coreCode}-${state.handing}`;
             if (state.mode === 'double') sku = `DBL-${sku}`;
             if (state.mode === 'bifold') sku = `BIFOLD-${styleCode}-${w}${state.height}`;
@@ -1330,8 +1328,13 @@
             if (!matConf) return { cost: 0, sysW: 36, sysH: 80, valid: false };
 
             let styleKey = matConf.pricingKey;
-            let coreKey = config.material === 'Simpson' ? config.core : (config.material === 'Simpson White Oak' ? '138HC' : (config.core === 'SC' ? '138SC' : '138HC'));
-            let tIndex = config.tier === 'jobLot' ? 0 : (config.tier === 'pallet' ? 1 : 2);
+            
+            // Cleaned up Core Logic
+            let coreKey = '138HC';
+            if (config.material === 'Simpson') coreKey = config.core;
+            else if (config.material !== 'Simpson White Oak' && config.core === 'SC') coreKey = '138SC';
+
+            let tIndex = {'jobLot': 0, 'pallet': 1, 'drop': 2}[config.tier] || 0;
             
             let sysWidthInches = 36;
             let lookupW = '2/4';
@@ -1344,32 +1347,40 @@
             }
             let sysHeightInches = config.height === '68' ? 80 : (config.height === '70' ? 84 : 96);
 
-            let rawPrice = null;
             let finalCost = 0;
+            let valid = false;
             try {
-                if (matConf.hasPricingShape) {
-                    rawPrice = pricingDB[styleKey][config.shape][config.height][coreKey][lookupW];
-                } else {
-                    rawPrice = pricingDB[styleKey][config.height][coreKey][lookupW];
+                let rawPrice = matConf.hasPricingShape 
+                    ? pricingDB[styleKey]?.[config.shape]?.[config.height]?.[coreKey]?.[lookupW]
+                    : pricingDB[styleKey]?.[config.height]?.[coreKey]?.[lookupW];
+                
+                if (rawPrice != null) {
+                    finalCost = Array.isArray(rawPrice) ? (rawPrice[tIndex] || 0) : rawPrice;
+                    valid = !isNaN(finalCost) && finalCost !== null;
                 }
-                if (rawPrice != null) finalCost = Array.isArray(rawPrice) ? (rawPrice[tIndex] || 0) : rawPrice;
             } catch (e) {}
 
-            return { cost: finalCost, sysW: sysWidthInches, sysH: sysHeightInches, valid: rawPrice != null && !isNaN(finalCost) && finalCost !== null };
+            return { cost: finalCost, sysW: sysWidthInches, sysH: sysHeightInches, valid };
         }
 
         function calcHardware(config) {
+            if (config.mode === 'misc') return 0;
             let hwCost = 0;
-            if (config.mode === 'misc') return hwCost;
+            const isDouble = config.mode === 'double';
 
             if (config.jambFinish === 'white_oak' && config.mode !== 'slab_only') {
                 let pairCost = config.jambSize === '6-9/16"' ? systemConstants.whiteOakJamb6 : systemConstants.whiteOakJamb4;
-                hwCost += ((config.mode === 'double') ? (pairCost * 1.5) : pairCost) + (systemConstants.whiteOakHingeUpcharge * ((config.mode === 'double') ? 4 : 3));
+                hwCost += (isDouble ? (pairCost * 1.5) : pairCost) + (systemConstants.whiteOakHingeUpcharge * (isDouble ? 4 : 3));
             }
 
-            if (config.mode === 'double' && config.material !== 'Custom') {
-                if (config.handing === 'No Hand') hwCost += parseFloat((config.ballCatch || "0|").split('|')[0] || 0);
-                else hwCost += parseFloat((config.height === '68' ? (config.flushBolt68 || "0|") : (config.flushBolt80 || "0|")).split('|')[0] || 0) + (config.height === '68' ? systemConstants.doubleHardware68 : (config.handing === 'RHA' ? systemConstants.doubleHardware80RHA : systemConstants.doubleHardware80LHA));
+            if (isDouble && config.material !== 'Custom') {
+                if (config.handing === 'No Hand') {
+                    hwCost += parseFloat((config.ballCatch || "0|").split('|')[0] || 0);
+                } else {
+                    const boltCost = parseFloat((config.height === '68' ? (config.flushBolt68 || "0|") : (config.flushBolt80 || "0|")).split('|')[0] || 0);
+                    const systemCost = config.height === '68' ? systemConstants.doubleHardware68 : (config.handing === 'RHA' ? systemConstants.doubleHardware80RHA : systemConstants.doubleHardware80LHA);
+                    hwCost += boltCost + systemCost;
+                }
             }
             return hwCost;
         }
@@ -1386,10 +1397,10 @@
             let trimPoints = 0;
             if (config.trimApplication === 'cut') {
                 trimLab = systemConstants.trimLaborCut;
-                trimPoints = systemConstants.laborTrimCut || 5; // fallback
+                trimPoints = systemConstants.laborTrimCut || 5;
             } else if (config.trimApplication === 'applied') {
                 trimLab = systemConstants.trimLaborApplied;
-                trimPoints = systemConstants.laborTrimApplied || 10; // fallback
+                trimPoints = systemConstants.laborTrimApplied || 10;
             }
 
             return { mat: (trimSticks * tData.pricePerStick) / qty, lab: trimLab, sticks: trimSticks, points: trimPoints };
@@ -1399,6 +1410,7 @@
             let desc = `<strong class="text-dark">Product Information:</strong><br>`;
             let bom = [];
             const isDouble = config.mode === 'double';
+            const qtyMultiplier = isDouble ? 2 : 1;
 
             if (config.mode === 'misc') {
                 let note = config.customDesc || "Misc Product / Part";
@@ -1413,11 +1425,11 @@
                     if (config.material === 'Custom') {
                         let note = config.customDesc || "Custom Vendor Slab";
                         desc += `<strong class="text-dark">Door Design: Custom</strong><br> ${note}<br><br>`;
-                        bom.push({ name: `Custom Slab: ${note}`, qty: isDouble ? (qty * 2) : qty });
+                        bom.push({ name: `Custom Slab: ${note}`, qty: qty * qtyMultiplier });
                     } else {
                         let cStr = config.material === 'Simpson White Oak' ? "Solid Wood" : (config.core === 'SC' || (config.core && config.core.includes('1-3/4')) ? "Solid Core" : "Hollow Core");
                         desc += `<strong class="text-dark">Door Design: ${config.material}</strong><br> ${config.skuBase}<br> ${cStr} ${config.shape}<br><br>`;
-                        bom.push({ name: `Door Slab (${config.skuBase})`, qty: isDouble ? (qty * 2) : qty });
+                        bom.push({ name: `Door Slab (${config.skuBase})`, qty: qty * qtyMultiplier });
                     }
                 }
 
@@ -1437,7 +1449,7 @@
 
                     if (config.unitType === 'prehung' && config.mode !== 'bifold') {
                         desc += `<strong class="text-dark">Hardware:</strong><br> ${config.activeBore} ${isDouble ? '/ ' + config.inactiveBore : ''}<br> ${config.hingeFinish} ${config.hingeShape}<br><br>`;
-                        bom.push({ name: `Hinge: ${config.hingeFinish} ${config.hingeShape}`, qty: isDouble ? (qty * 6) : (qty * 3) });
+                        bom.push({ name: `Hinge: ${config.hingeFinish} ${config.hingeShape}`, qty: qty * (isDouble ? 6 : 3) });
                         
                         if (isDouble && config.material !== 'Custom') {
                             let hw = config.handing === 'No Hand' ? (config.ballCatch||"|").split('|')[1] : (sysH === 80 ? (config.flushBolt68||"|").split('|')[1] : (config.flushBolt80||"|").split('|')[1]);
@@ -1457,12 +1469,12 @@
 
         function calculatePricingAndBOM(config, qty) {
             const slabData = calcBaseSlab(config);
-            const totalSlabCost = slabData.cost * (config.mode === 'misc' ? 1 : (config.mode === 'double' ? 2 : (config.mode === 'cased_opening' ? 0 : 1)));
+            const slabMultiplier = config.mode === 'misc' ? 1 : (config.mode === 'double' ? 2 : (config.mode === 'cased_opening' ? 0 : 1));
+            const totalSlabCost = slabData.cost * slabMultiplier;
             const hwCost = calcHardware(config);
             const trimData = calcTrim(config, slabData.sysW, slabData.sysH, qty);
             const addersCost = config.services.reduce((sum, s) => sum + s.cost, 0);
 
-            // Labor Calculation
             let unitLaborPoints = 0;
             let laborItems = [];
             
@@ -1479,9 +1491,8 @@
                 }
             });
 
-            // Default baseline points for custom doors without prehang services checked
             if (config.material === 'Custom' && unitLaborPoints === 0) {
-                unitLaborPoints = 15; // Baseline fallback
+                unitLaborPoints = 15; 
                 laborItems.push({ name: "Custom Prep Baseline", points: 15 });
             }
 
@@ -1504,8 +1515,6 @@
             if (shape.includes('4 Panel')) return `<div class="css-door grid-4p"><div class="css-panel"></div><div class="css-panel"></div><div class="css-panel"></div><div class="css-panel"></div></div>`;
             if (shape.includes('5 Panel')) return `<div class="css-door grid-5p">${'<div class="css-panel"></div>'.repeat(5)}</div>`;
             if (shape.includes('6 Panel')) return `<div class="css-door grid-6p">${'<div class="css-panel"></div>'.repeat(6)}</div>`;
-            
-            // Fallback for Flush
             return `<div class="css-door grid-1p" style="padding:0;"><div class="css-panel" style="border:none; box-shadow:none; background:#f8fafc;"></div></div>`;
         }
 
@@ -1548,12 +1557,10 @@
             
             const matConf = MATERIAL_CONFIG[appState.material] || MATERIAL_CONFIG['Molded'];
             let styleCode = matConf.prefix;
-            if (appState.material === 'Molded') styleCode = appState.shape.includes('Shaker') ? 'SM' + appState.shape.split(' ')[0] + 'P' : 'SM' + appState.shape.split(' ')[0] + 'P';
+            if (appState.material === 'Molded') styleCode = 'SM' + appState.shape.split(' ')[0] + 'P';
             else if (matConf.hasPricingShape) styleCode = 'SP' + (appState.shape.match(/\d+/) ? appState.shape.match(/\d+/)[0] : 'CSTM');
 
             let mFolder = matConf.folder;
-            
-            // Renders the dynamic CSS shapes, and overlays the image file IF it exists on your server.
             const combinedHTML = `${getCssDoorHTML(appState.shape)} <img src="assets/images/doors/${mFolder}/${styleCode}.webp" alt="${styleCode}" style="width:100%; height:100%; object-fit:contain; position:absolute; top:0; left:0; z-index:5;" onerror="this.style.display='none';">`;
 
             let sClass = `door-slab ${appState.mode === 'bifold' ? 'bifold' : ''}`;
@@ -1635,7 +1642,6 @@
                 const stored = localStorage.getItem('sd_projectTally'); 
                 if(stored) {
                     projectTally = JSON.parse(stored).map(item => {
-                        // Data Migration Layer
                         if (item.state && !item.state.shape) {
                             if (item.state.material === 'Molded') item.state.shape = item.state.shapeMolded;
                             else if (item.state.material === 'Flush') item.state.shape = item.state.shapeFlush;
@@ -1853,7 +1859,6 @@
             
             if (tId === 'laborTable') {
                 txt += document.getElementById('laborTotalPoints').innerText + " Total Points | " + document.getElementById('laborTotalTime').innerText + "\n\n";
-                // Aggregate
                 let lAgg = {};
                 projectTally.forEach(item => {
                     if (!item.config) return;
@@ -1905,13 +1910,11 @@
                             <circle cx="80" cy="90" r="6" fill="var(--brand-dark)" />`;
                 }
             } else if (mode === 'double') {
-                // Double Doors (LHA / RHA)
                 svg += `<path d="M 10,90 L 10,40" /> <path d="M 50,90 A 40 40 0 0 0 10 40" stroke-dasharray="5,5" stroke="#94a3b8" stroke-width="3" />
                         <circle cx="10" cy="90" r="5" fill="var(--brand-dark)" />
                         <path d="M 90,90 L 90,40" /> <path d="M 50,90 A 40 40 0 0 1 90 40" stroke-dasharray="5,5" stroke="#94a3b8" stroke-width="3" />
                         <circle cx="90" cy="90" r="5" fill="var(--brand-dark)" />`;
                 
-                // Active Leaf Indicator Triangle
                 if (handing === 'LHA') {
                     svg += `<polygon points="25,25 35,35 15,35" fill="var(--brand-accent)" stroke="none" />`;
                 } else if (handing === 'RHA') {
@@ -1931,7 +1934,6 @@
             ticket.classList.add('print-active');
             window.print();
             
-            // Cleanup after print dialog
             document.body.classList.remove('single-print-mode');
             ticket.classList.remove('print-active');
         }
@@ -1971,7 +1973,6 @@
                 gTot += gen.price;
                 totalLaborPts += gen.laborPoints;
                 
-                // 1. Customer Proposal
                 cTb.innerHTML += `<tr>
                     <td><button class="btn-copy" onclick="copyCustomerRow(this, ${i})">Copy</button></td>
                     <td style="font-weight:700; color:var(--brand-primary);">${item.room || "None"}</td>
@@ -1981,10 +1982,8 @@
                     <td style="text-align:right; font-weight:bold;">$${gen.price.toFixed(2)}</td>
                 </tr>`;
                 
-                // 2. Aggregate Production BOM
                 gen.bom.forEach(p => aggBOM[p.name] = (aggBOM[p.name] || 0) + p.qty);
 
-                // 3. Labor Room Breakdown & Aggregation
                 if (gen.laborPoints > 0) {
                     gen.laborItems.forEach(l => {
                         if (!laborAggregate[l.name]) laborAggregate[l.name] = { qty: 0, pts: 0 };
@@ -2001,7 +2000,6 @@
                     </tr>`;
                 }
 
-                // 4. Generate Production Ticket
                 const conf = item.config;
                 let typeStr = conf.mode === 'double' ? "Double Door" : (conf.mode === 'bifold' ? "Bifold" : (conf.mode === 'slab_only' ? "Slab Only" : (conf.mode === 'cased_opening' ? "Cased Opening" : (conf.mode === 'misc' ? "Misc Item" : "Single Door"))));
                 let dimStr = conf.material === 'Custom' ? `${conf.customW}" x ${conf.customH}"` : `${conf.width} x ${conf.height === '68' ? "6'8\"" : (conf.height === '70' ? "7'0\"" : "8'0\"")}`;
@@ -2031,7 +2029,7 @@
                 let swingDiagram = generateSwingDiagram(conf.handing, conf.mode);
                 const matConf = MATERIAL_CONFIG[conf.material] || MATERIAL_CONFIG['Molded'];
                 let styleCode = matConf.prefix;
-                if (conf.material === 'Molded') styleCode = conf.shape.includes('Shaker') ? 'SM' + conf.shape.split(' ')[0] + 'P' : 'SM' + conf.shape.split(' ')[0] + 'P';
+                if (conf.material === 'Molded') styleCode = 'SM' + conf.shape.split(' ')[0] + 'P';
                 else if (matConf.hasPricingShape) styleCode = 'SP' + (conf.shape.match(/\d+/) ? conf.shape.match(/\d+/)[0] : 'CSTM');
 
                 let visualHTML = '';
@@ -2114,7 +2112,6 @@
                 </div>`;
             });
 
-            // 5. Update UI Metrics
             document.getElementById('fullQuoteGrandTotal').innerText = "$" + gTot.toFixed(2);
             document.getElementById('laborTotalPoints').innerText = totalLaborPts;
             
