@@ -410,7 +410,15 @@
                     </div>
                 </div>
                 <table class="order-table" id="customerTable">
-                    <thead><tr><th style="width:60px;"></th><th>Room / Location</th><th>Description</th><th style="width:80px; text-align:center;">Qty</th><th style="width:100px; text-align:right;">Price</th><th style="width:100px; text-align:right;">Total</th></tr></thead>
+                    <thead><tr>
+                        <th style="width:60px;"></th>
+                        <th style="width:15%;">Room / Location</th>
+                        <th style="width:120px; text-align:center;">Design</th>
+                        <th>Description</th>
+                        <th style="width:80px; text-align:center;">Qty</th>
+                        <th style="width:100px; text-align:right;">Price</th>
+                        <th style="width:100px; text-align:right;">Total</th>
+                    </tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -1329,7 +1337,6 @@
 
             let styleKey = matConf.pricingKey;
             
-            // Cleaned up Core Logic
             let coreKey = '138HC';
             if (config.material === 'Simpson') coreKey = config.core;
             else if (config.material !== 'Simpson White Oak' && config.core === 'SC') coreKey = '138SC';
@@ -1949,7 +1956,7 @@
             window.currentBOMData = {};
 
             if (projectTally.length === 0) { 
-                cTb.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">No items configured yet.</td></tr>`; 
+                cTb.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">No items configured yet.</td></tr>`; 
                 pTb.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:30px; color:var(--text-muted);">No materials to order.</td></tr>`; 
                 tCont.innerHTML = `<div class="text-center text-muted" style="padding: 40px;">No production tickets to generate.</div>`;
                 lAggTb.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:30px; color:var(--text-muted);">No labor data.</td></tr>`; 
@@ -1972,18 +1979,62 @@
                 const gen = calculatePricingAndBOM(item.config, item.qty);
                 gTot += gen.price;
                 totalLaborPts += gen.laborPoints;
-                
+
+                // --- GENERATE VISUALS FOR PROPOSAL AND TICKETS ---
+                const conf = item.config;
+                let swingDiagram = generateSwingDiagram(conf.handing, conf.mode);
+                const matConf = MATERIAL_CONFIG[conf.material] || MATERIAL_CONFIG['Molded'];
+                let styleCode = matConf.prefix;
+                if (conf.material === 'Molded') styleCode = 'SM' + conf.shape.split(' ')[0] + 'P';
+                else if (matConf.hasPricingShape) styleCode = 'SP' + (conf.shape.match(/\d+/) ? conf.shape.match(/\d+/)[0] : 'CSTM');
+
+                let visualHTML = '';
+                if(conf.mode === 'misc' || conf.material === 'Custom') {
+                    visualHTML = `<div class="custom-blueprint" style="flex:1; font-size: 0.7rem; display:flex; text-align:center; align-items:center; justify-content:center;">CUSTOM</div>`;
+                } else {
+                    visualHTML = `
+                    <div class="door-slab ${conf.mode === 'bifold' ? 'bifold' : ''}" style="flex: 1; position: relative; margin: 0; background: white; border: 1px solid #cbd5e1; box-sizing: border-box;">
+                        ${getCssDoorHTML(conf.shape)}
+                        <img src="assets/images/doors/${matConf.folder}/${styleCode}.webp" alt="" style="width:100%; height:100%; object-fit:contain; position:absolute; top:0; left:0; z-index:5;" onerror="this.style.display='none';">
+                        ${conf.mode !== 'double' && conf.handing.includes('H') ? `<div class="door-knob ${conf.handing==='LH'?'knob-right':'knob-left'}"></div>` : ''}
+                        ${conf.mode === 'double' ? (conf.handing==='LHA'?'<div class="door-knob knob-right"></div>':'') : ''}
+                    </div>
+                    `;
+                    if(conf.mode === 'double') {
+                        visualHTML += `
+                        <div class="door-slab" style="flex: 1; position: relative; margin: 0; background: white; border: 1px solid #cbd5e1; border-left: none; box-sizing: border-box;">
+                            ${getCssDoorHTML(conf.shape)}
+                            <img src="assets/images/doors/${matConf.folder}/${styleCode}.webp" alt="" style="width:100%; height:100%; object-fit:contain; position:absolute; top:0; left:0; z-index:5;" onerror="this.style.display='none';">
+                            ${conf.handing==='RHA'?'<div class="door-knob knob-left"></div>':''}
+                        </div>
+                        `;
+                    }
+                }
+
+                let miniVisual = `
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 90px; margin: 0 auto;">
+                    <div style="width: 100%; height: 160px; border: 2px solid var(--border-color); background: #f8fafc; padding: 4px; display: flex; border-radius: 4px;">
+                        ${visualHTML}
+                    </div>
+                    ${swingDiagram ? `<div style="width: 50px; height: 50px;">${swingDiagram}</div>` : ''}
+                </div>
+                `;
+
+                // 1. Customer Proposal
                 cTb.innerHTML += `<tr>
-                    <td><button class="btn-copy" onclick="copyCustomerRow(this, ${i})">Copy</button></td>
-                    <td style="font-weight:700; color:var(--brand-primary);">${item.room || "None"}</td>
-                    <td style="line-height:1.5; font-size:0.9rem;">${gen.desc}</td>
-                    <td style="text-align:center; font-weight:bold;">${item.qty}</td>
-                    <td style="text-align:right;">$${(gen.price/item.qty).toFixed(2)}</td>
-                    <td style="text-align:right; font-weight:bold;">$${gen.price.toFixed(2)}</td>
+                    <td style="vertical-align: middle;"><button class="btn-copy" onclick="copyCustomerRow(this, ${i})">Copy</button></td>
+                    <td style="font-weight:700; color:var(--brand-primary); vertical-align: middle;">${item.room || "None"}</td>
+                    <td style="text-align:center; vertical-align: middle; padding: 15px 5px;">${miniVisual}</td>
+                    <td style="line-height:1.5; font-size:0.9rem; vertical-align: middle;">${gen.desc}</td>
+                    <td style="text-align:center; font-weight:bold; vertical-align: middle;">${item.qty}</td>
+                    <td style="text-align:right; vertical-align: middle;">$${(gen.price/item.qty).toFixed(2)}</td>
+                    <td style="text-align:right; font-weight:bold; vertical-align: middle;">$${gen.price.toFixed(2)}</td>
                 </tr>`;
                 
+                // 2. Aggregate Production BOM
                 gen.bom.forEach(p => aggBOM[p.name] = (aggBOM[p.name] || 0) + p.qty);
 
+                // 3. Labor Room Breakdown & Aggregation
                 if (gen.laborPoints > 0) {
                     gen.laborItems.forEach(l => {
                         if (!laborAggregate[l.name]) laborAggregate[l.name] = { qty: 0, pts: 0 };
@@ -2000,7 +2051,7 @@
                     </tr>`;
                 }
 
-                const conf = item.config;
+                // 4. Generate Production Ticket
                 let typeStr = conf.mode === 'double' ? "Double Door" : (conf.mode === 'bifold' ? "Bifold" : (conf.mode === 'slab_only' ? "Slab Only" : (conf.mode === 'cased_opening' ? "Cased Opening" : (conf.mode === 'misc' ? "Misc Item" : "Single Door"))));
                 let dimStr = conf.material === 'Custom' ? `${conf.customW}" x ${conf.customH}"` : `${conf.width} x ${conf.height === '68' ? "6'8\"" : (conf.height === '70' ? "7'0\"" : "8'0\"")}`;
                 
@@ -2024,35 +2075,6 @@
                 if (conf.mode !== 'misc' && conf.mode !== 'cased_opening' && conf.mode !== 'slab_only') {
                     hwStr = `${conf.activeBore} <br> <span class="text-lg text-muted">${conf.hingeFinish} <br>(${conf.hingeShape.replace(' Hinge Shape', '')})</span>`;
                     if(conf.mode === 'double') hwStr += `<br><span class="text-lg text-brand mt-10" style="display:block;">Double HW: ${conf.handing !== 'No Hand' ? 'Astragal + Flush Bolt' : 'Ball Catch'}</span>`;
-                }
-
-                let swingDiagram = generateSwingDiagram(conf.handing, conf.mode);
-                const matConf = MATERIAL_CONFIG[conf.material] || MATERIAL_CONFIG['Molded'];
-                let styleCode = matConf.prefix;
-                if (conf.material === 'Molded') styleCode = 'SM' + conf.shape.split(' ')[0] + 'P';
-                else if (matConf.hasPricingShape) styleCode = 'SP' + (conf.shape.match(/\d+/) ? conf.shape.match(/\d+/)[0] : 'CSTM');
-
-                let visualHTML = '';
-                if(conf.mode === 'misc' || conf.material === 'Custom') {
-                    visualHTML = `<div class="custom-blueprint" style="flex:1;">CUSTOM ITEM</div>`;
-                } else {
-                    visualHTML = `
-                    <div class="door-slab ${conf.mode === 'bifold' ? 'bifold' : ''}" style="flex: 1; position: relative; margin: 0; background: white; border: 1px solid #cbd5e1; box-sizing: border-box;">
-                        ${getCssDoorHTML(conf.shape)}
-                        <img src="assets/images/doors/${matConf.folder}/${styleCode}.webp" alt="" style="width:100%; height:100%; object-fit:contain; position:absolute; top:0; left:0; z-index:5;" onerror="this.style.display='none';">
-                        ${conf.mode !== 'double' && conf.handing.includes('H') ? `<div class="door-knob ${conf.handing==='LH'?'knob-right':'knob-left'}"></div>` : ''}
-                        ${conf.mode === 'double' ? (conf.handing==='LHA'?'<div class="door-knob knob-right"></div>':'') : ''}
-                    </div>
-                    `;
-                    if(conf.mode === 'double') {
-                        visualHTML += `
-                        <div class="door-slab" style="flex: 1; position: relative; margin: 0; background: white; border: 1px solid #cbd5e1; border-left: none; box-sizing: border-box;">
-                            ${getCssDoorHTML(conf.shape)}
-                            <img src="assets/images/doors/${matConf.folder}/${styleCode}.webp" alt="" style="width:100%; height:100%; object-fit:contain; position:absolute; top:0; left:0; z-index:5;" onerror="this.style.display='none';">
-                            ${conf.handing==='RHA'?'<div class="door-knob knob-left"></div>':''}
-                        </div>
-                        `;
-                    }
                 }
 
                 tHtml += `
@@ -2112,6 +2134,7 @@
                 </div>`;
             });
 
+            // 5. Update UI Metrics
             document.getElementById('fullQuoteGrandTotal').innerText = "$" + gTot.toFixed(2);
             document.getElementById('laborTotalPoints').innerText = totalLaborPts;
             
