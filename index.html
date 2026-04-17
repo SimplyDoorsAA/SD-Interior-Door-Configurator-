@@ -20,6 +20,56 @@
 
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-page); color: var(--text-main); margin: 0; padding: 0; padding-bottom: 120px; }
         
+        /* --- UTILITY CLASSES --- */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-end { display: flex; justify-content: space-between; align-items: flex-end; }
+        .flex-col { display: flex; flex-direction: column; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .gap-10 { gap: 10px; }
+        .m-0 { margin: 0 !important; }
+        .mt-5 { margin-top: 5px; }
+        .mt-10 { margin-top: 10px; }
+        .mt-15 { margin-top: 15px; }
+        .mt-20 { margin-top: 20px; }
+        .mb-0 { margin-bottom: 0 !important; }
+        .mb-5 { margin-bottom: 5px; }
+        .mb-10 { margin-bottom: 10px; }
+        .mb-15 { margin-bottom: 15px; }
+        .mb-20 { margin-bottom: 20px; }
+        .p-0 { padding: 0 !important; }
+        .pb-15 { padding-bottom: 15px; }
+        .pt-15 { padding-top: 15px; }
+        .w-full { width: 100%; box-sizing: border-box; }
+        .h-full { height: 100%; box-sizing: border-box; }
+        
+        .text-sm { font-size: 0.85rem; }
+        .text-md { font-size: 0.95rem; }
+        .text-lg { font-size: 1.1rem; }
+        .text-xl { font-size: 1.2rem; }
+        .text-2xl { font-size: 1.6rem; }
+        .text-3xl { font-size: 2rem; }
+        .text-4xl { font-size: 2.4rem; }
+        .font-bold { font-weight: bold; }
+        .font-extrabold { font-weight: 800; }
+        .line-height-1 { line-height: 1; }
+        
+        .text-muted { color: var(--text-muted); }
+        .text-brand { color: var(--brand-primary); }
+        .text-accent { color: var(--brand-accent); }
+        .text-dark { color: var(--brand-dark); }
+        .text-warning { color: var(--warning); }
+        .text-blue { color: #1e40af; }
+        .text-white { color: white; }
+        
+        .bg-blue-light { background: #eff6ff; }
+        .bg-gray-light { background: #f1f5f9; }
+        .bg-green-light { background: #f0fdf4; }
+        
+        .border-blue-light { border-color: #bfdbfe; }
+        .border-dashed { border-top: 1px dashed var(--border-color); }
+
         /* --- LAYOUT & NAVIGATION --- */
         .brand-header { background-color: var(--brand-dark); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--brand-primary); position: sticky; top:0; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);}
         .nav-controls button { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 8px 15px; font-weight: 600; cursor: pointer; margin-left: 10px; transition: 0.2s;}
@@ -41,7 +91,6 @@
         .pill:hover { border-color: #cbd5e1; background: #f8fafc; }
         .pill.selected { border-color: var(--brand-primary); background: var(--selection-bg); color: var(--brand-dark); }
         
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .input-group { display: flex; flex-direction: column; margin-bottom: 15px;}
         .input-group label { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
         .input-group select, .input-group input, .input-group textarea { padding: 10px; border: 2px solid var(--border-color); border-radius: 6px; font-size: 1rem; font-weight: 600; outline: none; transition: 0.2s; background: white; font-family: inherit;}
@@ -127,7 +176,6 @@
         .modal-header { background: var(--brand-dark); color: white; padding: 15px 20px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .modal-close { background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; line-height: 1; }
         .modal-body { padding: 25px; overflow-y: auto; }
-        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;}
         .modal-footer { padding: 15px 20px; background: #f8fafc; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; }
         .btn-cancel { background: white; border: 1px solid var(--border-color); padding: 10px 15px; border-radius: 6px; font-weight: 600; cursor: pointer; }
         .btn-save { background: var(--brand-primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s;}
@@ -162,9 +210,9 @@
 <body>
 
     <header class="brand-header">
-        <div style="font-size: 1.2rem; font-weight: 800;">Simply<span style="color:var(--brand-accent);">Doors</span> <span style="font-weight: 400; font-size:1rem; margin-left:10px; color:#cbd5e1;">| Interior Configurator</span></div>
+        <div class="font-extrabold text-xl">Simply<span class="text-accent">Doors</span> <span style="font-weight: 400; font-size:1rem; margin-left:10px; color:#cbd5e1;">| Interior Configurator</span></div>
         <div class="nav-controls">
-            <button onclick="window.location.href='index.html'">Dashboard & Trim</button>
+            <button onclick="window.location.href='admin.html'">Dashboard & Trim</button>
             <button class="primary" id="btnToggleQuote" onclick="toggleFullQuote()">View Full Quote</button>
         </div>
     </header>
@@ -176,9 +224,9 @@
                 <button class="modal-close" onclick="closeBulkModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <p style="font-size: 0.95rem; color: var(--text-main); margin-top: 0; margin-bottom: 20px;">Use the fields below to universally override attributes across all doors in the cart. <em>Note: Custom Write-In products will ignore Shape/Core overrides.</em></p>
+                <p class="text-md m-0 mb-20 text-main">Use the fields below to universally override attributes across all doors in the cart. <em>Note: Custom Write-In products will ignore Shape/Core overrides.</em></p>
                 
-                <div class="modal-grid">
+                <div class="grid-2 mb-20">
                     <div class="modal-section-title">General Specs & Math</div>
                     <div class="input-group">
                         <label>Override Gross Margin (%)</label>
@@ -212,75 +260,15 @@
                         </select>
                     </div>
 
-                    <div class="modal-section-title">Design, Styles, & Core</div>
-                    <div class="input-group">
-                        <label>Material Family</label>
+                    <div class="modal-section-title">Design & Material Family</div>
+                    <div class="input-group" style="grid-column: 1 / -1;">
+                        <label>Material Family Override</label>
                         <select id="bulkMaterial">
                             <option value="">-- Do Not Change --</option>
                             <option value="Molded">Molded Panel</option>
                             <option value="Simpson">Simpson MDF Shaker</option>
                             <option value="Simpson White Oak">Simpson White Oak</option>
                             <option value="Flush">Flush Doors</option>
-                        </select>
-                    </div>
-                    <div class="input-group"></div>
-
-                    <div class="input-group">
-                        <label>Shape Override (If Molded)</label>
-                        <select id="bulkMoldedShape">
-                            <option value="">-- Do Not Change --</option>
-                            <option value="1 Panel Shaker">1 Panel Shaker</option>
-                            <option value="2 Panel Shaker">2 Panel Shaker</option>
-                            <option value="3 Panel Shaker">3 Panel Shaker</option>
-                            <option value="3 Panel Equal Shaker">3 Panel Equal Shaker</option>
-                            <option value="5 Panel Shaker">5 Panel Shaker</option>
-                            <option value="6 Panel">6 Panel</option>
-                            <option value="4 Panel">4 Panel</option>
-                            <option value="5 Panel">5 Panel</option>
-                            <option value="2 Panel Roundtop Plank">2 Panel Roundtop Plank</option>
-                            <option value="2 Panel Roundtop">2 Panel Roundtop</option>
-                            <option value="2 Panel Archtop">2 Panel Archtop</option>
-                            <option value="2 Panel Squaretop">2 Panel Squaretop</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Shape Override (If Simpson MDF)</label>
-                        <select id="bulkSimpsonShape">
-                            <option value="">-- Do Not Change --</option>
-                            <option value="1 Panel Shaker">1 Panel Shaker</option>
-                            <option value="2 Panel Shaker">2 Panel Shaker</option>
-                            <option value="3 Panel Equal Shaker">3 Panel Equal Shaker</option>
-                            <option value="3 Panel Craftsman Shaker">3 Panel Craftsman Shaker</option>
-                            <option value="5 Panel Shaker">5 Panel Shaker</option>
-                        </select>
-                    </div>
-                    <div class="input-group" style="grid-column: 1 / -1;">
-                        <label>Material Override (If Flush)</label>
-                        <select id="bulkFlushShape">
-                            <option value="">-- Do Not Change --</option>
-                            <option value="Hardwood">Hardwood (Lauan)</option>
-                            <option value="Birch">Birch</option>
-                            <option value="Oak">Oak</option>
-                            <option value="Primed Hardboard">Primed Hardboard</option>
-                            <option value="Primed Embossed">Primed Embossed</option>
-                        </select>
-                    </div>
-
-                    <div class="input-group">
-                        <label>Core Override (Molded/Flush)</label>
-                        <select id="bulkStdCore">
-                            <option value="">-- Do Not Change --</option>
-                            <option value="HC">Hollow Core</option>
-                            <option value="SC">Solid Core</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Core Override (Simpson MDF)</label>
-                        <select id="bulkSimpsonCore">
-                            <option value="">-- Do Not Change --</option>
-                            <option value="1-3/8_std">1-3/8" Standard</option>
-                            <option value="1-3/4_std">1-3/4" Standard Solid</option>
-                            <option value="1-3/4_20min">1-3/4" 20-Min Fire Rated</option>
                         </select>
                     </div>
 
@@ -339,7 +327,7 @@
     <div class="full-quote-view" id="fullQuoteView">
         <div class="quote-card">
             <div class="quote-header">
-                <h2 style="margin:0;">Project Quote Overview</h2>
+                <h2 class="m-0">Project Quote Overview</h2>
             </div>
             <div class="quote-tabs">
                 <button class="quote-tab-btn active" id="tabCustomer" onclick="switchQuoteTab('customer')">Customer Facing Quote</button>
@@ -347,15 +335,15 @@
             </div>
             
             <div class="quote-content" id="contentCustomer">
-                <div style="display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+                <div class="flex-end mb-20">
                     <div>
-                        <h3 style="margin:0; color:var(--brand-dark);">Customer Proposal</h3>
-                        <p style="margin:5px 0 0; font-size:0.9rem; color:var(--text-muted);">Formatted descriptions and retail pricing.</p>
+                        <h3 class="m-0 text-dark">Customer Proposal</h3>
+                        <p class="mt-5 mb-0 text-sm text-muted">Formatted descriptions and retail pricing.</p>
                     </div>
-                    <div style="text-align:right;">
-                        <button class="btn-copy-all" onclick="copyEntireTable('customerTable', this)" style="margin-bottom: 10px;">Copy Entire Quote</button>
-                        <div style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; font-weight:bold;">Quote Total</div>
-                        <div id="fullQuoteGrandTotal" style="font-size:2rem; font-weight:800; color:var(--brand-accent); line-height:1;">$0.00</div>
+                    <div class="text-right">
+                        <button class="btn-copy-all mb-10" onclick="copyEntireTable('customerTable', this)">Copy Entire Quote</button>
+                        <div class="text-sm text-muted font-bold" style="text-transform:uppercase;">Quote Total</div>
+                        <div id="fullQuoteGrandTotal" class="text-3xl font-extrabold text-accent line-height-1">$0.00</div>
                     </div>
                 </div>
                 <table class="order-table" id="customerTable">
@@ -365,12 +353,12 @@
             </div>
 
             <div class="quote-content hidden" id="contentProduction">
-                <div style="display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+                <div class="flex-end mb-20">
                     <div>
-                        <h3 style="margin:0; color:var(--brand-dark);">Production Order (BOM)</h3>
-                        <p style="margin:5px 0 0; font-size:0.9rem; color:var(--text-muted);">Aggregated SKUs, Jambs, Stops, Trim, and Hardware.</p>
+                        <h3 class="m-0 text-dark">Production Order (BOM)</h3>
+                        <p class="mt-5 mb-0 text-sm text-muted">Aggregated SKUs, Jambs, Stops, Trim, and Hardware.</p>
                     </div>
-                    <div style="text-align:right;">
+                    <div class="text-right">
                         <button class="btn-copy-all" onclick="copyEntireTable('productionTable', this)">Copy Entire BOM</button>
                     </div>
                 </div>
@@ -389,18 +377,18 @@
             
             <div class="door-stage" id="doorStage"></div>
 
-            <div style="width: 100%; margin-bottom: 15px;">
-                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; margin-bottom: 4px;">Generated SKU / Item</div>
+            <div class="w-full mb-15">
+                <div class="text-sm text-muted font-bold mb-5" style="text-transform: uppercase;">Generated SKU / Item</div>
                 <div class="dynamic-sku" id="dynamicSkuDisplay">SM5P-2468-LH</div>
             </div>
             
-            <div style="width: 100%; border-top: 1px solid var(--border-color); padding-top: 15px; text-align: center;">
-                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Est. Customer Price</div>
-                <div id="calculatedPrice" style="font-size: 2.4rem; font-weight: 800; color: var(--brand-primary); line-height: 1; margin-top: 5px;">$0.00</div>
+            <div class="w-full pt-15 border-dashed text-center">
+                <div class="text-sm text-muted font-bold" style="text-transform: uppercase;">Est. Customer Price</div>
+                <div id="calculatedPrice" class="text-4xl font-extrabold text-brand line-height-1 mt-5">$0.00</div>
                 
-                <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.85rem; color: var(--text-muted);">
-                    <span>Cost: <strong id="floatingInternalCost" style="color: var(--text-main);">$0.00</strong></span>
-                    <span>Profit: <strong id="floatingProfit" style="color: var(--brand-accent);">+$0.00</strong></span>
+                <div class="flex-between mt-10 text-sm text-muted">
+                    <span>Cost: <strong id="floatingInternalCost" class="text-main">$0.00</strong></span>
+                    <span>Profit: <strong id="floatingProfit" class="text-accent">+$0.00</strong></span>
                 </div>
             </div>
 
@@ -414,38 +402,38 @@
                 <div class="panel-header margin-header">
                     <span>Job Margin Configuration</span>
                 </div>
-                <div class="panel-body row" style="align-items: center;">
-                    <div class="input-group" style="margin:0;">
-                        <label style="color: var(--text-main);">Target Gross Margin (%)</label>
+                <div class="panel-body grid-2" style="align-items: center;">
+                    <div class="input-group m-0">
+                        <label class="text-main">Target Gross Margin (%)</label>
                         <div style="position: relative; display: flex; align-items: center;">
-                            <input type="number" id="marginPercent" step="1" min="0" max="99" style="text-align: center; font-size: 1.2rem; width: 100%; box-sizing: border-box;">
+                            <input type="number" id="marginPercent" step="1" min="0" max="99" class="text-center text-xl w-full">
                             <span style="position: absolute; right: 15px; font-weight: bold; color: var(--text-muted);">%</span>
                         </div>
                     </div>
-                    <div style="text-align: center;">
-                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">Markup Equivalent</div>
-                        <div id="calculatedMarkup" style="font-weight:800; color:var(--warning); font-size:1.6rem; line-height: 1;">1.43x</div>
+                    <div class="text-center">
+                        <div class="text-sm font-bold text-muted mb-5" style="text-transform: uppercase;">Markup Equivalent</div>
+                        <div id="calculatedMarkup" class="font-extrabold text-warning text-2xl line-height-1">1.43x</div>
                     </div>
                 </div>
             </div>
 
             <div class="config-panel">
-                <div class="panel-header" style="background: #1e293b; color: white;">1. Room Details & Quantity</div>
+                <div class="panel-header text-white" style="background: #1e293b;">1. Room Details & Quantity</div>
                 <div class="panel-body" style="display: grid; grid-template-columns: 3fr 1fr; gap: 20px; align-items: start;">
-                    <div class="input-group" style="margin:0;">
-                        <label style="color: var(--brand-primary);">Room / Location</label>
-                        <input type="text" id="roomInput" placeholder="e.g., Master Bedroom" style="font-size: 1.2rem; padding: 12px; border-color: var(--brand-primary); background: #f0fdf4;">
+                    <div class="input-group m-0">
+                        <label class="text-brand">Room / Location</label>
+                        <input type="text" id="roomInput" placeholder="e.g., Master Bedroom" class="text-xl bg-green-light" style="padding: 12px; border-color: var(--brand-primary);">
                     </div>
-                    <div class="input-group" style="margin:0;">
+                    <div class="input-group m-0">
                         <label>Quantity</label>
-                        <input type="number" id="qtyInput" min="1" style="font-size: 1.2rem; text-align: center; padding: 12px;">
+                        <input type="number" id="qtyInput" min="1" class="text-xl text-center" style="padding: 12px;">
                     </div>
                 </div>
             </div>
 
             <div class="config-panel">
                 <div class="panel-header">2. Configuration Base</div>
-                <div class="panel-body row" style="padding-bottom: 5px;">
+                <div class="panel-body grid-2 pb-5">
                     <div>
                         <div class="pill-group-title">Configuration</div>
                         <div class="pill-group" id="configTypeGroup">
@@ -467,30 +455,30 @@
                 </div>
             </div>
 
-            <div class="config-panel hidden" id="customDetailsPanel" style="border-color: #93c5fd; background: #f8fafc;">
-                <div class="panel-header" style="background: #eff6ff; color: #1d4ed8; border-bottom: 1px solid #bfdbfe;">Custom Product Details</div>
+            <div class="config-panel hidden bg-blue-light border-blue-light" id="customDetailsPanel">
+                <div class="panel-header text-blue bg-blue-light border-blue-light">Custom Product Details</div>
                 <div class="panel-body">
                     <div class="input-group" style="grid-column: 1 / -1;">
-                        <label style="color: #1e40af;">Product Description / Quote Notes (Customer Facing)</label>
+                        <label class="text-blue">Product Description / Quote Notes (Customer Facing)</label>
                         <textarea id="customDesc" rows="3" placeholder="e.g., Reclaimed 3-Panel Mahogany Door from XYZ Millwork (Includes Slab Only)"></textarea>
                     </div>
-                    <div class="row">
+                    <div class="grid-2">
                         <div class="input-group">
-                            <label style="color: #1e40af;">Base Internal Cost ($)</label>
-                            <input type="number" id="customCost" step="0.01" min="0" style="font-size: 1.2rem; color: var(--brand-primary);">
+                            <label class="text-blue">Base Internal Cost ($)</label>
+                            <input type="number" id="customCost" step="0.01" min="0" class="text-xl text-brand">
                         </div>
-                        <div id="customDimsWrapper" class="row" style="gap: 10px;">
+                        <div id="customDimsWrapper" class="grid-2 gap-10">
                             <div class="input-group">
-                                <label style="color: #1e40af;">Exact Width (Inches)</label>
+                                <label class="text-blue">Exact Width (Inches)</label>
                                 <input type="number" id="customWidthInches" min="1">
                             </div>
                             <div class="input-group">
-                                <label style="color: #1e40af;">Exact Height (Inches)</label>
+                                <label class="text-blue">Exact Height (Inches)</label>
                                 <input type="number" id="customHeightInches" min="1">
                             </div>
                         </div>
                     </div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted); background: #e2e8f0; padding: 10px; border-radius: 6px; margin-top: 10px;">
+                    <div class="text-sm text-muted bg-gray-light p-10 mt-10" style="border-radius: 6px;">
                         <strong>Note:</strong> Auto-checking is disabled for custom doors. Please manually select the exact Services, Jambs, and Hinges below if they are required for this custom item. Trim math will use the exact inches provided above.
                     </div>
                 </div>
@@ -500,7 +488,7 @@
                 
                 <div class="config-panel" id="dimensionsPanel">
                     <div class="panel-header">3. Dimensions</div>
-                    <div class="panel-body row">
+                    <div class="panel-body grid-2">
                         <div class="input-group">
                             <label>Door System Width</label>
                             <select id="doorWidth"></select>
@@ -508,7 +496,7 @@
                         </div>
                         <div class="input-group">
                             <label>Nominal Height</label>
-                            <div class="pill-group" id="doorHeightGroup" style="margin:0;">
+                            <div class="pill-group m-0" id="doorHeightGroup">
                                 <div class="pill" data-val='68'>6'8"</div>
                                 <div class="pill" data-val='70'>7'0"</div>
                                 <div class="pill" data-val='80'>8'0"</div>
@@ -529,99 +517,29 @@
                             <div class="pill" data-val="Custom" style="border-color: var(--custom-blue); color: var(--custom-blue);">Custom / Write-In</div>
                         </div>
 
-                        <div id="whiteOakCategoryWrapper" class="hidden" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed var(--border-color);">
-                            <div class="pill-group-title" style="color: var(--brand-primary);">White Oak Collection</div>
-                            <div class="pill-group" id="whiteOakCategoryGroup" style="margin: 0;">
-                                <div class="pill" data-val="Solid Shaker">Solid Shaker</div>
-                                <div class="pill" data-val="Glass & French">Glass & French Lites</div>
-                            </div>
-                        </div>
-
                         <div id="shapeSelectionWrapper">
-                            <div id="mouldedOptionsWrapper">
-                                <div class="pill-group-title">Style Shape</div>
-                                <div class="pill-group" id="shapeGroupMolded">
-                                    <div class="pill" data-val="1 Panel Shaker">1 Panel Shaker</div>
-                                    <div class="pill" data-val="2 Panel Shaker">2 Panel Shaker</div>
-                                    <div class="pill" data-val="3 Panel Shaker">3 Panel Shaker</div>
-                                    <div class="pill" data-val="3 Panel Equal Shaker">3 Panel Equal Shaker</div>
-                                    <div class="pill" data-val="5 Panel Shaker">5 Panel Shaker</div>
-                                    <div class="pill" data-val="6 Panel">6 Panel</div>
-                                    <div class="pill" data-val="4 Panel">4 Panel</div>
-                                    <div class="pill" data-val="5 Panel">5 Panel</div>
-                                    <div class="pill" data-val="2 Panel Roundtop Plank">2 Panel Roundtop Plank</div>
-                                    <div class="pill" data-val="2 Panel Roundtop">2 Panel Roundtop</div>
-                                    <div class="pill" data-val="2 Panel Archtop">2 Panel Archtop</div>
-                                    <div class="pill" data-val="2 Panel Squaretop">2 Panel Squaretop</div>
-                                </div>
-                            </div>
+                            <div id="dynamicShapeWrapper"></div>
 
-                            <div id="flushOptionsWrapper" class="hidden">
-                                <div class="pill-group-title">Flush Material</div>
-                                <div class="pill-group" id="shapeGroupFlush">
-                                    <div class="pill" data-val="Hardwood">Hardwood (Lauan)</div>
-                                    <div class="pill" data-val="Birch">Birch</div>
-                                    <div class="pill" data-val="Oak">Oak</div>
-                                    <div class="pill" data-val="Primed Hardboard">Primed Hardboard</div>
-                                    <div class="pill" data-val="Primed Embossed">Primed Embossed</div>
+                            <div id="coreSettingsWrapper">
+                                <div id="standardCoreWrapper">
+                                    <div class="pill-group-title mt-15">Core Type</div>
+                                    <div class="pill-group" id="coreGroup">
+                                        <div class="pill" data-val="HC">Hollow Core</div>
+                                        <div class="pill" data-val="SC">Solid Core</div>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div id="simpsonOptionsWrapper" class="hidden">
-                                <div class="pill-group-title">Simpson Shaker Style</div>
-                                <div class="pill-group" id="shapeGroupSimpson">
-                                    <div class="pill" data-val="1 Panel Shaker">1 Panel Shaker</div>
-                                    <div class="pill" data-val="2 Panel Shaker">2 Panel Shaker</div>
-                                    <div class="pill" data-val="3 Panel Equal Shaker">3 Panel Equal Shaker</div>
-                                    <div class="pill" data-val="3 Panel Craftsman Shaker">3 Panel Craftsman Shaker</div>
-                                    <div class="pill" data-val="5 Panel Shaker">5 Panel Shaker</div>
-                                </div>
-                            </div>
-
-                            <div id="whiteOakSolidWrapper" class="hidden">
-                                <div class="pill-group-title">White Oak Solid Shaker</div>
-                                <div class="pill-group" id="shapeGroupWhiteOakSolid">
-                                    <div class="pill" data-val="1 Panel Shaker">1 Panel Shaker (720)</div>
-                                    <div class="pill" data-val="2 Panel Shaker">2 Panel Shaker (782)</div>
-                                    <div class="pill" data-val="3 Panel Equal Shaker">3 Panel Equal Shaker (730)</div>
-                                    <div class="pill" data-val="5 Panel Shaker">5 Panel Shaker (755)</div>
-                                </div>
-                            </div>
-
-                            <div id="whiteOakGlassWrapper" class="hidden">
-                                <div class="pill-group-title">White Oak Glass & French Lites</div>
-                                <div class="pill-group" id="shapeGroupWhiteOakGlass">
-                                    <div class="pill" data-val="1-Lite Clear">1-Lite Clear (1501)</div>
-                                    <div class="pill" data-val="1-Lite Satin Etch">1-Lite Satin Etch (1501)</div>
-                                    <div class="pill" data-val="1-Lite White Laminate">1-Lite White Lam (1501)</div>
-                                    <div class="pill" data-val="1-Lite Open Frame">1-Lite Open Frame (1501)</div>
-                                    <div class="pill" data-val="Pantry Glass">Pantry Glass (1590)</div>
-                                    <div class="pill" data-val="Wheat Glass">Wheat Glass (1592)</div>
-                                    <div class="pill" data-val="Laundry Glass">Laundry Glass (1593)</div>
-                                    <div class="pill" data-val="Wine Cellar Glass">Wine Cellar Glass (1594)</div>
-                                    <div class="pill" data-val="Border Glass">Border Glass (1596)</div>
-                                </div>
-                            </div>
-
-                            <div id="standardCoreWrapper">
-                                <div class="pill-group-title" style="margin-top: 15px;">Core Type</div>
-                                <div class="pill-group" id="coreGroup">
-                                    <div class="pill" data-val="HC">Hollow Core</div>
-                                    <div class="pill" data-val="SC">Solid Core</div>
-                                </div>
-                            </div>
-
-                            <div id="simpsonThicknessWrapper" class="hidden">
-                                <div class="pill-group-title" style="margin-top: 15px;">Thickness & Rating</div>
-                                <div class="pill-group" id="simpsonThicknessGroup">
-                                    <div class="pill" data-val="1-3/8_std">1-3/8" Standard</div>
-                                    <div class="pill" data-val="1-3/4_std">1-3/4" Standard Solid</div>
-                                    <div class="pill" data-val="1-3/4_20min">1-3/4" 20-Min Fire Rated</div>
+                                <div id="simpsonThicknessWrapper" class="hidden">
+                                    <div class="pill-group-title mt-15">Thickness & Rating</div>
+                                    <div class="pill-group" id="simpsonThicknessGroup">
+                                        <div class="pill" data-val="1-3/8_std">1-3/8" Standard</div>
+                                        <div class="pill" data-val="1-3/4_std">1-3/4" Standard Solid</div>
+                                        <div class="pill" data-val="1-3/4_20min">1-3/4" 20-Min Fire Rated</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row" style="margin-top: 15px;" id="purchaseTierWrapper">
+                        <div class="grid-2 mt-15" id="purchaseTierWrapper">
                             <div class="input-group">
                                 <label>Purchasing Tier</label>
                                 <select id="purchaseType">
@@ -637,10 +555,10 @@
                 <div id="prehungPanels">
                     <div class="config-panel" id="frameTrimPanel">
                         <div class="panel-header">5. Frame & Stop Options</div>
-                        <div class="panel-body row">
+                        <div class="panel-body grid-2">
                             <div class="input-group">
                                 <label>Jamb Size</label>
-                                <div class="pill-group" id="jambSizeGroup" style="margin:0;">
+                                <div class="pill-group m-0" id="jambSizeGroup">
                                     <div class="pill" data-val='4-9/16"'>4-9/16"</div>
                                     <div class="pill" data-val='4-7/8"'>4-7/8"</div>
                                     <div class="pill" data-val='6-9/16"'>6-9/16"</div>
@@ -648,7 +566,7 @@
                             </div>
                             <div class="input-group">
                                 <label>Jamb & Stop Finish</label>
-                                <div class="pill-group" id="jambFinishGroup" style="margin:0;">
+                                <div class="pill-group m-0" id="jambFinishGroup">
                                     <div class="pill" data-val="raw">Raw Pine</div>
                                     <div class="pill" data-val="primed">Primed</div>
                                     <div class="pill" data-val="white_oak">White Oak</div>
@@ -660,15 +578,15 @@
                     <div class="config-panel" id="hardwarePanel">
                         <div class="panel-header">6. Bore, Hinge, & Hardware</div>
                         <div class="panel-body">
-                            <div class="row">
+                            <div class="grid-2">
                                 <div class="input-group">
                                     <label>Handing</label>
-                                    <div class="pill-group" id="handingGroup" style="margin:0;"></div>
+                                    <div class="pill-group m-0" id="handingGroup"></div>
                                 </div>
                                 
                                 <div class="input-group" id="activeBoreWrapper">
                                     <label>Active Bore</label>
-                                    <div class="pill-group" id="activeBoreGroup" style="margin:0;">
+                                    <div class="pill-group m-0" id="activeBoreGroup">
                                         <div class="pill" data-val="Single Bore">Single Bore</div>
                                         <div class="pill" data-val="Double Bore">Double Bore</div>
                                         <div class="pill" data-val="No Bore">No Bore</div>
@@ -676,17 +594,17 @@
                                 </div>
                             </div>
 
-                            <div class="row hidden" id="inactiveBoreWrapper" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+                            <div class="grid-2 hidden mt-15 pt-15 border-dashed" id="inactiveBoreWrapper">
                                 <div class="input-group" style="grid-column: 2;">
-                                    <label style="color: var(--brand-primary);">Inactive Bore (Double Door)</label>
-                                    <div class="pill-group" id="inactiveBoreGroup" style="margin:0;">
+                                    <label class="text-brand">Inactive Bore (Double Door)</label>
+                                    <div class="pill-group m-0" id="inactiveBoreGroup">
                                         <div class="pill" data-val="No Bore">No Bore</div>
                                         <div class="pill" data-val="Single Bore">Single Bore</div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="row" style="margin-top: 20px;" id="hingeOptionsWrapper">
+                            <div class="grid-2 mt-20" id="hingeOptionsWrapper">
                                 <div class="input-group">
                                     <label>Hinge Color & Finish</label>
                                     <select id="hingeFinish">
@@ -709,9 +627,9 @@
                                 </div>
                             </div>
 
-                            <div class="row hidden" id="doubleHardwareWrapper" style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+                            <div class="grid-2 hidden mt-20 pt-15 border-dashed" id="doubleHardwareWrapper">
                                 <div class="input-group" id="flushBolt68Wrapper">
-                                    <label style="color: var(--brand-primary);">7" Flush Bolt Finish</label>
+                                    <label class="text-brand">7" Flush Bolt Finish</label>
                                     <select id="flushBolt68">
                                         <option value="4.30|7&quot; Flip Lever Flush Bolt Satin Nickel US15">Satin Nickel US15</option>
                                         <option value="4.30|7&quot; Flip Lever Flush Bolt Colonial Bronze US10BD">Colonial Bronze US10BD</option>
@@ -719,7 +637,7 @@
                                     </select>
                                 </div>
                                 <div class="input-group hidden" id="flushBolt80Wrapper">
-                                    <label style="color: var(--brand-primary);">16" Extension Bolt Finish</label>
+                                    <label class="text-brand">16" Extension Bolt Finish</label>
                                     <select id="flushBolt80">
                                         <option value="6.37|Flip Lvr Fl Bolt w/16&quot; Extension SatNckl US15">Satin Nickel US15</option>
                                         <option value="6.37|Flip Lvr Fl Bolt w/16&quot; Extension Col Brz US10BD">Colonial Bronze US10BD</option>
@@ -727,7 +645,7 @@
                                     </select>
                                 </div>
                                 <div class="input-group hidden" id="ballCatchWrapper">
-                                    <label style="color: var(--brand-primary);">Ball Catch Selection</label>
+                                    <label class="text-brand">Ball Catch Selection</label>
                                     <select id="ballCatch">
                                         <option value="0.50|Ball Catch Strike Plate Only Satin Nickel">Satin Nickel</option>
                                         <option value="0.50|Ball Catch Strike Plate Only Colonial Bronze">Colonial Bronze</option>
@@ -742,8 +660,8 @@
                     </div>
 
                     <div class="config-panel" id="trimPanelWrapper">
-                        <div class="panel-header" style="background-color: var(--brand-dark); color: white;">7. Trim & Casing Options</div>
-                        <div class="panel-body row">
+                        <div class="panel-header text-white bg-dark" style="background-color: var(--brand-dark);">7. Trim & Casing Options</div>
+                        <div class="panel-body grid-2">
                             <div class="input-group">
                                 <label>Trim Profile</label>
                                 <select id="trimProfile">
@@ -756,7 +674,7 @@
                             </div>
                             <div class="input-group">
                                 <label>Application Method</label>
-                                <div class="pill-group" id="trimApplicationGroup" style="margin:0; transition: 0.2s;">
+                                <div class="pill-group m-0" id="trimApplicationGroup" style="transition: 0.2s;">
                                     <div class="pill" data-val="included">Included (Material)</div>
                                     <div class="pill" data-val="cut">Pre-Cut (+$7)</div>
                                     <div class="pill" data-val="applied">Pre-Applied (+$15)</div>
@@ -783,19 +701,19 @@
                 <span id="sidebarTotalCount" style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">0 Items</span>
             </div>
             <div style="padding: 10px 15px; background: white; border-bottom: 1px solid var(--border-color); display: flex; gap: 10px; flex-wrap: wrap;">
-                <button class="btn-bulk-update" style="margin-bottom: 0; flex: 1 1 100%;" onclick="openBulkModal()">Project Settings / Bulk Updates</button>
+                <button class="btn-bulk-update mb-0" style="flex: 1 1 100%;" onclick="openBulkModal()">Project Settings / Bulk Updates</button>
                 <button class="btn-action-small" style="flex: 1; color: #b91c1c; background: #fef2f2; border-color: #fca5a5;" onclick="startNewProject()">✨ New Quote</button>
                 <button class="btn-action-small" style="flex: 1;" onclick="exportProject()">💾 Save Project</button>
                 <button class="btn-action-small" style="flex: 1;" onclick="document.getElementById('importFile').click()">📂 Load Project</button>
                 <input type="file" id="importFile" style="display:none" accept=".json" onchange="importProject(event)">
             </div>
             <div class="sidebar-scroll-area" id="sidebarItemsList">
-                <div style="text-align: center; color: var(--text-muted); padding: 20px 0; font-size: 0.9rem;">Loading Pricing Data...</div>
+                <div class="text-center text-muted py-20 text-md">Loading Pricing Data...</div>
             </div>
             <div class="sidebar-footer">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="font-weight: 700; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Total Quote Value</span>
-                    <span id="sidebarGrandTotal" style="font-size: 1.3rem; font-weight: 800; color: var(--brand-accent);">$0.00</span>
+                <div class="flex-between mb-10">
+                    <span class="font-bold text-muted text-sm" style="text-transform: uppercase;">Total Quote Value</span>
+                    <span id="sidebarGrandTotal" class="font-extrabold text-accent text-2xl">$0.00</span>
                 </div>
             </div>
         </aside>
@@ -805,6 +723,77 @@
     <div id="toast">Item added to Cart!</div>
 
     <script>
+        // ==========================================
+        // ARCHITECTURE UPGRADE: MATERIAL CONFIGURATION
+        // Single Source of Truth for Routing Logic
+        // ==========================================
+        const MATERIAL_CONFIG = {
+            "Molded": {
+                pricingKey: "molded", folder: "molded", prefix: "SM",
+                hasPricingShape: false, coreUI: "standard", defaultCore: "HC",
+                shapes: [
+                    { val: "1 Panel Shaker", label: "1 Panel Shaker" },
+                    { val: "2 Panel Shaker", label: "2 Panel Shaker" },
+                    { val: "3 Panel Shaker", label: "3 Panel Shaker" },
+                    { val: "3 Panel Equal Shaker", label: "3 Panel Equal Shaker" },
+                    { val: "5 Panel Shaker", label: "5 Panel Shaker" },
+                    { val: "6 Panel", label: "6 Panel" },
+                    { val: "4 Panel", label: "4 Panel" },
+                    { val: "5 Panel", label: "5 Panel" },
+                    { val: "2 Panel Roundtop Plank", label: "2 Panel Roundtop Plank" },
+                    { val: "2 Panel Roundtop", label: "2 Panel Roundtop" },
+                    { val: "2 Panel Archtop", label: "2 Panel Archtop" },
+                    { val: "2 Panel Squaretop", label: "2 Panel Squaretop" }
+                ]
+            },
+            "Flush": {
+                pricingKey: "flushHB", folder: "flush", prefix: "FLSH",
+                hasPricingShape: false, coreUI: "standard", defaultCore: "HC",
+                shapes: [
+                    { val: "Hardwood", label: "Hardwood (Lauan)" },
+                    { val: "Birch", label: "Birch" },
+                    { val: "Oak", label: "Oak" },
+                    { val: "Primed Hardboard", label: "Primed Hardboard" },
+                    { val: "Primed Embossed", label: "Primed Embossed" }
+                ]
+            },
+            "Simpson": {
+                pricingKey: "simpson", folder: "simpson", prefix: "SP",
+                hasPricingShape: true, coreUI: "simpson", defaultCore: "1-3/8_std",
+                shapes: [
+                    { val: "1 Panel Shaker", label: "1 Panel Shaker" },
+                    { val: "2 Panel Shaker", label: "2 Panel Shaker" },
+                    { val: "3 Panel Equal Shaker", label: "3 Panel Equal Shaker" },
+                    { val: "3 Panel Craftsman Shaker", label: "3 Panel Craftsman Shaker" },
+                    { val: "5 Panel Shaker", label: "5 Panel Shaker" }
+                ]
+            },
+            "Simpson White Oak": {
+                pricingKey: "simpsonWhiteOak", folder: "white-oak", prefix: "SP",
+                hasPricingShape: true, coreUI: "none", defaultCore: "138HC",
+                categories: {
+                    "Solid Shaker": [
+                        { val: "1 Panel Shaker", label: "1 Panel Shaker (720)" },
+                        { val: "2 Panel Shaker", label: "2 Panel Shaker (782)" },
+                        { val: "3 Panel Equal Shaker", label: "3 Panel Equal Shaker (730)" },
+                        { val: "5 Panel Shaker", label: "5 Panel Shaker (755)" }
+                    ],
+                    "Glass & French Lites": [
+                        { val: "1-Lite Clear", label: "1-Lite Clear (1501)" },
+                        { val: "1-Lite Satin Etch", label: "1-Lite Satin Etch (1501)" },
+                        { val: "1-Lite White Laminate", label: "1-Lite White Lam (1501)" },
+                        { val: "1-Lite Open Frame", label: "1-Lite Open Frame (1501)" },
+                        { val: "Pantry Glass", label: "Pantry Glass (1590)" },
+                        { val: "Wheat Glass", label: "Wheat Glass (1592)" },
+                        { val: "Laundry Glass", label: "Laundry Glass (1593)" },
+                        { val: "Wine Cellar Glass", label: "Wine Cellar Glass (1594)" },
+                        { val: "Border Glass", label: "Border Glass (1596)" }
+                    ]
+                }
+            },
+            "Custom": { pricingKey: "custom", folder: "custom", prefix: "CSTM", hasPricingShape: false, coreUI: "none" }
+        };
+
         // ==========================================
         // DOM CACHING & PERFORMANCE HELPERS
         // ==========================================
@@ -832,37 +821,26 @@
         const singleWidthsList = ["1'0\"", "1'2\"", "1'3\"", "1'4\"", "1'6\"", "1'8\"", "1'10\"", "2'0\"", "2'2\"", "2'4\"", "2'6\"", "2'8\"", "2'10\"", "3'0\""];
         const bifoldWidthsList = ["1'6\"", "2'0\"", "2'4\"", "2'6\"", "2'8\"", "3'0\"", "4'0\"", "5'0\"", "6'0\""];
 
-        // Added systemConstants to global variables
         let rawStevesMatrix, stevesMatrix, pricingDB, trimPricingDB, productionAdders, systemConstants;
 
         // The Fetch Engine
         async function initializeApplication() {
             try {
                 const response = await fetch(`data/pricing.json?v=${new Date().getTime()}`);
-                
                 if (!response.ok) throw new Error("Failed to load pricing database.");
-                
                 const data = await response.json();
 
-                // Assign the data to our global variables
                 rawStevesMatrix = data.rawStevesMatrix;
                 pricingDB = data.pricingDB;
                 trimPricingDB = data.trimPricingDB;
                 productionAdders = data.productionAdders;
                 
-                // Set systemConstants, with a fallback just in case the file hasn't updated yet
                 systemConstants = data.systemConstants || {
-                    trimLaborCut: 7.00,
-                    trimLaborApplied: 15.00,
-                    whiteOakJamb4: 94.10,
-                    whiteOakJamb6: 126.90,
-                    whiteOakHingeUpcharge: 12.98,
-                    doubleHardware68: 30.87,
-                    doubleHardware80RHA: 42.13,
-                    doubleHardware80LHA: 35.26
+                    trimLaborCut: 7.00, trimLaborApplied: 15.00,
+                    whiteOakJamb4: 94.10, whiteOakJamb6: 126.90, whiteOakHingeUpcharge: 12.98,
+                    doubleHardware68: 30.87, doubleHardware80RHA: 42.13, doubleHardware80LHA: 35.26
                 };
 
-                // Build the parsed stevesMatrix for the UI logic
                 stevesMatrix = {};
                 Object.entries(rawStevesMatrix).forEach(([shape, heights]) => {
                     stevesMatrix[shape] = {};
@@ -872,7 +850,6 @@
                     });
                 });
 
-                // Data is loaded! Initialize the UI
                 initAdders();
                 resetConfigurator();
                 loadTally();
@@ -915,8 +892,18 @@
             appState[key] = val;
             
             if (key === 'material') {
-                if (val === 'Simpson' && (!appState.simpsonThickness || !appState.simpsonThickness.includes('_'))) appState.simpsonThickness = '1-3/8_std';
-                if (val === 'Simpson White Oak') appState.jambFinish = 'white_oak';
+                const conf = MATERIAL_CONFIG[val];
+                if (conf) {
+                    if (val === 'Simpson' && (!appState.simpsonThickness || !appState.simpsonThickness.includes('_'))) appState.simpsonThickness = '1-3/8_std';
+                    if (val === 'Simpson White Oak') appState.jambFinish = 'white_oak';
+                    
+                    // Reset shape to first default of new material
+                    if (val === 'Simpson White Oak') appState.shape = conf.categories[appState.whiteOakCategory][0].val;
+                    else if (val !== 'Custom' && val !== 'misc') appState.shape = conf.shapes[0].val;
+                }
+            }
+            if (key === 'whiteOakCategory' && appState.material === 'Simpson White Oak') {
+                appState.shape = MATERIAL_CONFIG['Simpson White Oak'].categories[val][0].val;
             }
             if (key === 'mode') {
                 if (['slab_only', 'cased_opening', 'misc'].includes(val)) {
@@ -939,12 +926,49 @@
             
             const ids = [
                 'unitTypeWrapper', 'standardFlowPanels', 'customDetailsPanel', 'shapeSelectionWrapper', 'purchaseTierWrapper',
-                'dimensionsPanel', 'customDimsWrapper', 'mouldedOptionsWrapper', 'flushOptionsWrapper', 'simpsonOptionsWrapper',
-                'whiteOakCategoryWrapper', 'whiteOakSolidWrapper', 'whiteOakGlassWrapper', 'standardCoreWrapper', 'simpsonThicknessWrapper',
+                'dimensionsPanel', 'customDimsWrapper', 'standardCoreWrapper', 'simpsonThicknessWrapper', 'dynamicShapeWrapper',
                 'prehungPanels', 'trimPanelWrapper', 'activeBoreWrapper', 'hingeOptionsWrapper', 'inactiveBoreWrapper', 'doubleHardwareWrapper',
                 'ballCatchWrapper', 'flushBolt68Wrapper', 'flushBolt80Wrapper'
             ];
             ids.forEach(id => { DOM_CACHE[id] = document.getElementById(id); });
+        }
+
+        // ==========================================
+        // DYNAMIC SHAPE RENDERER
+        // ==========================================
+        function renderShapesDynamic() {
+            const mat = appState.material;
+            const conf = MATERIAL_CONFIG[mat];
+            const wrapper = DOM_CACHE.dynamicShapeWrapper;
+            
+            if (!conf || mat === 'Custom' || appState.mode === 'misc') {
+                wrapper.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            if (mat === 'Simpson White Oak') {
+                html += `<div class="pill-group-title text-brand mb-5">White Oak Collection</div>
+                         <div class="pill-group mb-15" id="whiteOakCategoryGroup">
+                            <div class="pill ${appState.whiteOakCategory === 'Solid Shaker' ? 'selected' : ''}" data-val="Solid Shaker">Solid Shaker</div>
+                            <div class="pill ${appState.whiteOakCategory === 'Glass & French Lites' ? 'selected' : ''}" data-val="Glass & French Lites">Glass & French Lites</div>
+                         </div>`;
+                const shapes = conf.categories[appState.whiteOakCategory];
+                html += `<div class="pill-group-title">${appState.whiteOakCategory} Shapes</div>
+                         <div class="pill-group" id="shapeGroupDynamic">`;
+                shapes.forEach(s => {
+                    html += `<div class="pill ${appState.shape === s.val ? 'selected' : ''}" data-val="${s.val}">${s.label}</div>`;
+                });
+                html += `</div>`;
+            } else {
+                html += `<div class="pill-group-title">${mat} Styles</div>
+                         <div class="pill-group" id="shapeGroupDynamic">`;
+                conf.shapes.forEach(s => {
+                    html += `<div class="pill ${appState.shape === s.val ? 'selected' : ''}" data-val="${s.val}">${s.label}</div>`;
+                });
+                html += `</div>`;
+            }
+            wrapper.innerHTML = html;
         }
 
         // ==========================================
@@ -966,21 +990,24 @@
             const isDouble = appState.mode === 'double';
             const isWhiteOak = appState.material === 'Simpson White Oak';
             const isCustom = appState.material === 'Custom';
+            
+            const matConf = MATERIAL_CONFIG[appState.material] || MATERIAL_CONFIG['Molded'];
+
+            renderShapesDynamic();
 
             if (!isMisc && !isCustom) {
-                let shape = appState.shapeFlush;
-                if (appState.material === 'Simpson') shape = appState.shapeSimpson;
-                else if (appState.material === 'Molded') shape = appState.shapeMolded;
-                else if (isWhiteOak) shape = appState.whiteOakCategory === 'Solid Shaker' ? appState.shapeWhiteOakSolid : appState.shapeWhiteOakGlass;
-
                 let availableWidths = [];
                 let statusMap = {};
 
                 if (appState.material === 'Simpson' || isWhiteOak) {
                     const thickKey = appState.simpsonThickness;
                     let targetPricing = null;
-                    if (isWhiteOak && pricingDB.simpsonWhiteOak[shape] && pricingDB.simpsonWhiteOak[shape][appState.height]) targetPricing = pricingDB.simpsonWhiteOak[shape][appState.height]['138HC'];
-                    else if (appState.material === 'Simpson' && pricingDB.simpson[shape] && pricingDB.simpson[shape][appState.height]) targetPricing = pricingDB.simpson[shape][appState.height][thickKey];
+                    if (isWhiteOak && pricingDB.simpsonWhiteOak[appState.shape] && pricingDB.simpsonWhiteOak[appState.shape][appState.height]) {
+                        targetPricing = pricingDB.simpsonWhiteOak[appState.shape][appState.height]['138HC'];
+                    }
+                    else if (appState.material === 'Simpson' && pricingDB.simpson[appState.shape] && pricingDB.simpson[appState.shape][appState.height]) {
+                        targetPricing = pricingDB.simpson[appState.shape][appState.height][thickKey];
+                    }
 
                     if (targetPricing) {
                         Object.keys(targetPricing).forEach(w => {
@@ -992,8 +1019,8 @@
                         });
                     }
                     availableWidths.sort((a, b) => (parseInt(a.split("'")[0]) * 12 + parseInt(a.split("'")[1] || 0)) - (parseInt(b.split("'")[0]) * 12 + parseInt(b.split("'")[1] || 0)));
-                } else if (stevesMatrix[shape] && stevesMatrix[shape][appState.height]) {
-                    const mData = stevesMatrix[shape][appState.height];
+                } else if (stevesMatrix[appState.shape] && stevesMatrix[appState.shape][appState.height]) {
+                    const mData = stevesMatrix[appState.shape][appState.height];
                     if (isBifold) {
                         bifoldWidthsList.forEach((w, i) => { if (mData.bifold[i] !== 'N') { availableWidths.push(w); statusMap[w] = mData.bifold[i]; } });
                     } else {
@@ -1064,10 +1091,10 @@
             };
 
             Object.entries({
-                configTypeGroup: appState.mode, unitTypeGroup: appState.unitType, materialGroup: appState.material, whiteOakCategoryGroup: appState.whiteOakCategory,
-                shapeGroupMolded: appState.shapeMolded, shapeGroupFlush: appState.shapeFlush, shapeGroupSimpson: appState.shapeSimpson, shapeGroupWhiteOakSolid: appState.shapeWhiteOakSolid,
-                shapeGroupWhiteOakGlass: appState.shapeWhiteOakGlass, doorHeightGroup: appState.height, coreGroup: appState.core, simpsonThicknessGroup: appState.simpsonThickness,
-                jambSizeGroup: appState.jambSize, jambFinishGroup: appState.jambFinish, trimApplicationGroup: appState.trimApplication, activeBoreGroup: appState.activeBore, inactiveBoreGroup: appState.inactiveBore
+                configTypeGroup: appState.mode, unitTypeGroup: appState.unitType, materialGroup: appState.material, 
+                doorHeightGroup: appState.height, coreGroup: appState.core, simpsonThicknessGroup: appState.simpsonThickness,
+                jambSizeGroup: appState.jambSize, jambFinishGroup: appState.jambFinish, trimApplicationGroup: appState.trimApplication, 
+                activeBoreGroup: appState.activeBore, inactiveBoreGroup: appState.inactiveBore
             }).forEach(([id, val]) => updatePills(id, val));
 
             const visibilityRules = {
@@ -1078,14 +1105,8 @@
                 'purchaseTierWrapper': !isCustom,
                 'dimensionsPanel': !isCustom,
                 'customDimsWrapper': isMisc,
-                'mouldedOptionsWrapper': appState.material === 'Molded',
-                'flushOptionsWrapper': appState.material === 'Flush',
-                'simpsonOptionsWrapper': appState.material === 'Simpson',
-                'whiteOakCategoryWrapper': isWhiteOak,
-                'whiteOakSolidWrapper': isWhiteOak && appState.whiteOakCategory === 'Solid Shaker',
-                'whiteOakGlassWrapper': isWhiteOak && appState.whiteOakCategory !== 'Solid Shaker',
-                'standardCoreWrapper': appState.material !== 'Simpson' && !isCustom,
-                'simpsonThicknessWrapper': appState.material === 'Simpson',
+                'standardCoreWrapper': matConf.coreUI === 'standard',
+                'simpsonThicknessWrapper': matConf.coreUI === 'simpson',
                 'prehungPanels': appState.unitType === 'prehung' && !isSlabOnly && !isCased,
                 'trimPanelWrapper': !isSlabOnly,
                 'activeBoreWrapper': !isBifold && !isCased,
@@ -1154,15 +1175,11 @@
 
         function buildConfig(state) {
             let services = state.services.map(name => { const adder = productionAdders.find(a => a.name === name); return { name: name, cost: adder ? adder.cost : 0 }; });
-
-            let shape = state.shapeFlush;
-            if (state.material === 'Simpson') shape = state.shapeSimpson;
-            else if (state.material === 'Molded') shape = state.shapeMolded;
-            else if (state.material === 'Simpson White Oak') shape = state.whiteOakCategory === 'Solid Shaker' ? state.shapeWhiteOakSolid : state.shapeWhiteOakGlass;
-
-            let styleCode = 'FLSH';
-            if (state.material === 'Molded') styleCode = shape.includes('Shaker') ? 'SM' + shape.split(' ')[0] + 'P' : 'SM' + shape.split(' ')[0] + 'P';
-            else if (state.material === 'Simpson' || state.material === 'Simpson White Oak') styleCode = 'SP' + (shape.match(/\d+/) ? shape.match(/\d+/)[0] : 'CSTM');
+            const matConf = MATERIAL_CONFIG[state.material] || MATERIAL_CONFIG['Molded'];
+            
+            let styleCode = matConf.prefix;
+            if (state.material === 'Molded') styleCode = state.shape.includes('Shaker') ? 'SM' + state.shape.split(' ')[0] + 'P' : 'SM' + state.shape.split(' ')[0] + 'P';
+            else if (matConf.hasPricingShape) styleCode = 'SP' + (state.shape.match(/\d+/) ? state.shape.match(/\d+/)[0] : 'CSTM');
             
             const w = (state.width || '').replace(/[^0-9]/g, '');
             let coreCode = state.material === 'Simpson' ? (state.simpsonThickness ? state.simpsonThickness.substring(0,3) : '1-3') : (state.core ? state.core.substring(0,3) : 'HC');
@@ -1175,7 +1192,7 @@
 
             return {
                 margin: (state.margin || 0) / 100, mode: state.mode, unitType: state.unitType, width: state.width, height: state.height, material: state.material,
-                shape: shape, core: state.material === 'Simpson' ? state.simpsonThickness : state.core, tier: state.tier,
+                shape: state.shape, core: state.material === 'Simpson' ? state.simpsonThickness : state.core, tier: state.tier,
                 jambSize: state.jambSize, jambFinish: state.jambFinish, trimProfile: state.trimProfile, trimApplication: state.trimApplication,
                 handing: state.handing, activeBore: state.activeBore, inactiveBore: state.inactiveBore, hingeFinish: state.hingeFinish, hingeShape: state.hingeShape,
                 ballCatch: state.ballCatch, flushBolt68: state.flushBolt68, flushBolt80: state.flushBolt80, services: services, skuBase: sku,
@@ -1187,7 +1204,10 @@
             if (config.mode === 'misc' || config.material === 'Custom') return { cost: config.customCost, sysW: config.customW, sysH: config.customH, valid: true };
             if (config.mode === 'cased_opening') return { cost: 0, sysW: 36, sysH: 80, valid: true };
 
-            let styleKey = config.material === 'Flush' ? 'flushHB' : (config.material === 'Simpson' ? 'simpson' : (config.material === 'Simpson White Oak' ? 'simpsonWhiteOak' : 'molded'));
+            const matConf = MATERIAL_CONFIG[config.material];
+            if (!matConf) return { cost: 0, sysW: 36, sysH: 80, valid: false };
+
+            let styleKey = matConf.pricingKey;
             let coreKey = config.material === 'Simpson' ? config.core : (config.material === 'Simpson White Oak' ? '138HC' : (config.core === 'SC' ? '138SC' : '138HC'));
             let tIndex = config.tier === 'jobLot' ? 0 : (config.tier === 'pallet' ? 1 : 2);
             
@@ -1205,10 +1225,11 @@
             let rawPrice = null;
             let finalCost = 0;
             try {
-                rawPrice = (styleKey === 'simpson' || styleKey === 'simpsonWhiteOak') 
-                    ? pricingDB[styleKey][config.shape][config.height][coreKey][lookupW]
-                    : (pricingDB[styleKey][config.height][coreKey][lookupW]);
-                
+                if (matConf.hasPricingShape) {
+                    rawPrice = pricingDB[styleKey][config.shape][config.height][coreKey][lookupW];
+                } else {
+                    rawPrice = pricingDB[styleKey][config.height][coreKey][lookupW];
+                }
                 if (rawPrice != null) finalCost = Array.isArray(rawPrice) ? (rawPrice[tIndex] || 0) : rawPrice;
             } catch (e) {}
 
@@ -1219,13 +1240,11 @@
             let hwCost = 0;
             if (config.mode === 'misc') return hwCost;
 
-            // Updated to use System Constants
             if (config.jambFinish === 'white_oak' && config.mode !== 'slab_only') {
                 let pairCost = config.jambSize === '6-9/16"' ? systemConstants.whiteOakJamb6 : systemConstants.whiteOakJamb4;
                 hwCost += ((config.mode === 'double') ? (pairCost * 1.5) : pairCost) + (systemConstants.whiteOakHingeUpcharge * ((config.mode === 'double') ? 4 : 3));
             }
 
-            // Updated to use System Constants
             if (config.mode === 'double' && config.material !== 'Custom') {
                 if (config.handing === 'No Hand') hwCost += parseFloat((config.ballCatch || "0|").split('|')[0] || 0);
                 else hwCost += parseFloat((config.height === '68' ? (config.flushBolt68 || "0|") : (config.flushBolt80 || "0|")).split('|')[0] || 0) + (config.height === '68' ? systemConstants.doubleHardware68 : (config.handing === 'RHA' ? systemConstants.doubleHardware80RHA : systemConstants.doubleHardware80LHA));
@@ -1242,7 +1261,6 @@
             const trimSticks = Math.ceil((totalInches * 1.10) / 168); 
             
             let trimLab = 0;
-            // Updated to use System Constants
             if (config.trimApplication === 'cut') trimLab = systemConstants.trimLaborCut;
             else if (config.trimApplication === 'applied') trimLab = systemConstants.trimLaborApplied;
 
@@ -1250,7 +1268,7 @@
         }
 
         function buildOutput(config, qty, sysW, sysH, trimSticks) {
-            let desc = `<strong style="color:var(--brand-dark);">Product Information:</strong><br>`;
+            let desc = `<strong class="text-dark">Product Information:</strong><br>`;
             let bom = [];
             const isDouble = config.mode === 'double';
 
@@ -1266,11 +1284,11 @@
                 if (config.mode !== 'cased_opening') {
                     if (config.material === 'Custom') {
                         let note = config.customDesc || "Custom Vendor Slab";
-                        desc += `<strong style="color:var(--brand-dark);">Door Design: Custom</strong><br> ${note}<br><br>`;
+                        desc += `<strong class="text-dark">Door Design: Custom</strong><br> ${note}<br><br>`;
                         bom.push({ name: `Custom Slab: ${note}`, qty: isDouble ? (qty * 2) : qty });
                     } else {
                         let cStr = config.material === 'Simpson White Oak' ? "Solid Wood" : (config.core === 'SC' || (config.core && config.core.includes('1-3/4')) ? "Solid Core" : "Hollow Core");
-                        desc += `<strong style="color:var(--brand-dark);">Door Design: ${config.material}</strong><br> ${config.skuBase}<br> ${cStr} ${config.shape}<br><br>`;
+                        desc += `<strong class="text-dark">Door Design: ${config.material}</strong><br> ${config.skuBase}<br> ${cStr} ${config.shape}<br><br>`;
                         bom.push({ name: `Door Slab (${config.skuBase})`, qty: isDouble ? (qty * 2) : qty });
                     }
                 }
@@ -1280,17 +1298,17 @@
                     let fName = `${config.jambSize} ${isWO ? 'White Oak' : (config.jambFinish === 'primed' ? 'Primed FJ Pine' : 'Raw FJ Pine')} Flat Jamb${sysH > 80 ? " - 8'0\"" : " - 6'8\""}`;
                     let sName = isWO ? "3/8\" x 1-3/8\" x 98\" White Oak Interior Stop" : (config.jambFinish === 'primed' ? "STOP 0887 PFJ 3/8 X 1-1/4 X 14' PRM" : `STOP 0887 PFJ RAW 2MIT`);
                     
-                    desc += `<strong style="color:var(--brand-dark);">Frame & Stop:</strong><br> ${fName}<br> ${isWO ? 'White Oak' : (config.jambFinish === 'primed' ? 'Primed' : 'Raw')} Stop Applied<br><br>`;
+                    desc += `<strong class="text-dark">Frame & Stop:</strong><br> ${fName}<br> ${isWO ? 'White Oak' : (config.jambFinish === 'primed' ? 'Primed' : 'Raw')} Stop Applied<br><br>`;
                     bom.push({ name: fName, qty: Math.ceil(isDouble ? (qty * 3) : (3 + ((qty - 1) * 2.5))) }, { name: sName, qty: isWO ? (isDouble ? 4 : 3) * qty : Math.ceil(isDouble ? (qty * 3) : (3 + ((qty - 1) * 2.5))) });
 
                     if (trimSticks > 0 && config.trimProfile !== 'none') {
                         let appStr = config.trimApplication === 'cut' ? 'Pre-Cut' : (config.trimApplication === 'applied' ? 'Pre-Applied' : 'Material Included');
-                        desc += `<strong style="color:var(--brand-dark);">Trim & Casing:</strong><br> ${config.trimProfile}<br> ${appStr}<br><br>`;
+                        desc += `<strong class="text-dark">Trim & Casing:</strong><br> ${config.trimProfile}<br> ${appStr}<br><br>`;
                         bom.push({ name: `14' Trim Stick: ${config.trimProfile}`, qty: trimSticks });
                     }
 
                     if (config.unitType === 'prehung' && config.mode !== 'bifold') {
-                        desc += `<strong style="color:var(--brand-dark);">Hardware:</strong><br> ${config.activeBore} ${isDouble ? '/ ' + config.inactiveBore : ''}<br> ${config.hingeFinish} ${config.hingeShape}<br><br>`;
+                        desc += `<strong class="text-dark">Hardware:</strong><br> ${config.activeBore} ${isDouble ? '/ ' + config.inactiveBore : ''}<br> ${config.hingeFinish} ${config.hingeShape}<br><br>`;
                         bom.push({ name: `Hinge: ${config.hingeFinish} ${config.hingeShape}`, qty: isDouble ? (qty * 6) : (qty * 3) });
                         
                         if (isDouble && config.material !== 'Custom') {
@@ -1305,7 +1323,7 @@
                 }
             }
 
-            if (config.services.length > 0) desc += `<strong style="color:var(--brand-dark);">Services & Adders:</strong><br> ${config.services.map(s => s.name).join('<br>')}`;
+            if (config.services.length > 0) desc += `<strong class="text-dark">Services & Adders:</strong><br> ${config.services.map(s => s.name).join('<br>')}`;
             return { desc, bom };
         }
 
@@ -1363,19 +1381,15 @@
                 stage.innerHTML = `<div class="custom-blueprint" style="height: ${Math.min(300, (appState.customH||84) * 3)}px; width: ${Math.min(140, (appState.customW||36) * 3)}px;">CUSTOM SLAB<br>${appState.customW||36}" x ${appState.customH||84}"</div>`; return;
             }
             
-            let shape = appState.shapeFlush;
-            if (appState.material === 'Simpson') shape = appState.shapeSimpson;
-            else if (appState.material === 'Molded') shape = appState.shapeMolded;
-            else if (appState.material === 'Simpson White Oak') shape = appState.whiteOakCategory === 'Solid Shaker' ? appState.shapeWhiteOakSolid : appState.shapeWhiteOakGlass;
-
-            let styleCode = 'FLSH';
-            if(appState.material === 'Molded') styleCode = shape.includes('Shaker') ? 'SM' + shape.split(' ')[0] + 'P' : 'SM' + shape.split(' ')[0] + 'P';
-            else if(appState.material === 'Simpson' || appState.material === 'Simpson White Oak') styleCode = 'SP' + (shape.match(/\d+/) ? shape.match(/\d+/)[0] : 'CSTM');
+            const matConf = MATERIAL_CONFIG[appState.material] || MATERIAL_CONFIG['Molded'];
+            let styleCode = matConf.prefix;
+            if (appState.material === 'Molded') styleCode = appState.shape.includes('Shaker') ? 'SM' + appState.shape.split(' ')[0] + 'P' : 'SM' + appState.shape.split(' ')[0] + 'P';
+            else if (matConf.hasPricingShape) styleCode = 'SP' + (appState.shape.match(/\d+/) ? appState.shape.match(/\d+/)[0] : 'CSTM');
 
             let panelsHTML = `<div class="shape-container"><div class="shape-flush"></div></div>`;
-            if (shape.includes('Panel')) panelsHTML = `<div class="shape-container"><div class="shape-1p"><div class="door-panel-detail"></div></div></div>`; 
+            if (appState.shape.includes('Panel')) panelsHTML = `<div class="shape-container"><div class="shape-1p"><div class="door-panel-detail"></div></div></div>`; 
 
-            let mFolder = appState.material === 'Simpson' ? 'simpson' : (appState.material === 'Molded' ? 'molded' : (appState.material === 'Simpson White Oak' ? 'white-oak' : 'flush'));
+            let mFolder = matConf.folder;
             const combinedHTML = `<img src="assets/images/doors/${mFolder}/${styleCode}.webp" alt="${styleCode}" style="width:100%; height:100%; object-fit:contain; position:absolute; top:0; left:0; z-index:5;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">${panelsHTML.replace('class="shape-container"', 'class="shape-container" style="display:none;"')}`;
 
             let sClass = `door-slab ${appState.mode === 'bifold' ? 'bifold' : ''}`;
@@ -1396,8 +1410,7 @@
 
             const stateMap = {
                 'configTypeGroup': 'mode', 'unitTypeGroup': 'unitType', 'materialGroup': 'material', 'whiteOakCategoryGroup': 'whiteOakCategory',
-                'shapeGroupMolded': 'shapeMolded', 'shapeGroupFlush': 'shapeFlush', 'shapeGroupSimpson': 'shapeSimpson', 'shapeGroupWhiteOakSolid': 'shapeWhiteOakSolid',
-                'shapeGroupWhiteOakGlass': 'shapeWhiteOakGlass', 'doorHeightGroup': 'height', 'coreGroup': 'core', 'simpsonThicknessGroup': 'simpsonThickness',
+                'shapeGroupDynamic': 'shape', 'doorHeightGroup': 'height', 'coreGroup': 'core', 'simpsonThicknessGroup': 'simpsonThickness',
                 'jambSizeGroup': 'jambSize', 'jambFinishGroup': 'jambFinish', 'trimApplicationGroup': 'trimApplication', 'handingGroup': 'handing',
                 'activeBoreGroup': 'activeBore', 'inactiveBoreGroup': 'inactiveBore'
             };
@@ -1442,8 +1455,7 @@
         function resetConfigurator() {
             appState = {
                 margin: 30, room: "", qty: 1, mode: "single", unitType: "prehung", material: "Molded", whiteOakCategory: "Solid Shaker",
-                shapeMolded: "1 Panel Shaker", shapeFlush: "Hardwood", shapeSimpson: "1 Panel Shaker", shapeWhiteOakSolid: "1 Panel Shaker",
-                shapeWhiteOakGlass: "1-Lite Clear", core: "HC", simpsonThickness: "1-3/8_std", width: "2'8\"", height: "68", tier: "jobLot",
+                shape: "1 Panel Shaker", core: "HC", simpsonThickness: "1-3/8_std", width: "2'8\"", height: "68", tier: "jobLot",
                 jambSize: '4-9/16"', jambFinish: "raw", trimProfile: "none", trimApplication: "included", handing: "LH", activeBore: "Single Bore",
                 inactiveBore: "No Bore", hingeFinish: "Satin Nickel Standard Hinge", hingeShape: '5/8" Radius 5/8" Radius Hinge Shape',
                 ballCatch: "0.50|Ball Catch Strike Plate Only Satin Nickel", flushBolt68: "4.30|7\" Flip Lever Flush Bolt Satin Nickel US15",
@@ -1457,7 +1469,19 @@
         function loadTally() {
             try { 
                 const stored = localStorage.getItem('sd_projectTally'); 
-                if(stored) projectTally = JSON.parse(stored).filter(item => item.config !== undefined);
+                if(stored) {
+                    projectTally = JSON.parse(stored).map(item => {
+                        // Data Migration Layer (Moves old shape bindings to master shape state)
+                        if (item.state && !item.state.shape) {
+                            if (item.state.material === 'Molded') item.state.shape = item.state.shapeMolded;
+                            else if (item.state.material === 'Flush') item.state.shape = item.state.shapeFlush;
+                            else if (item.state.material === 'Simpson') item.state.shape = item.state.shapeSimpson;
+                            else if (item.state.material === 'Simpson White Oak') item.state.shape = item.state.whiteOakCategory === 'Solid Shaker' ? item.state.shapeWhiteOakSolid : item.state.shapeWhiteOakGlass;
+                            else item.state.shape = "1 Panel Shaker";
+                        }
+                        return item;
+                    }).filter(item => item.config !== undefined);
+                }
             } catch(e){}
             renderSidebar();
         }
@@ -1519,7 +1543,7 @@
             let grandTotal = 0;
 
             if (projectTally.length === 0) {
-                listEl.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px 0; font-size: 0.9rem;">No items built yet.</div>';
+                listEl.innerHTML = '<div class="text-center text-muted py-20 text-md">No items built yet.</div>';
                 document.getElementById('sidebarTotalCount').innerText = '0 Items'; document.getElementById('sidebarGrandTotal').innerText = '$0.00';
                 if (viewMode === 'fullquote') renderFullQuote(); return;
             }
@@ -1584,7 +1608,7 @@
         function closeBulkModal() { document.getElementById('bulkModal').style.display = 'none'; }
         function applyBulkUpdates() {
             let updates = false;
-            const vals = { margin: document.getElementById('bulkMargin').value, height: document.getElementById('bulkHeight').value, jambSize: document.getElementById('bulkJambSize').value, jambFinish: document.getElementById('bulkJambFinish').value, material: document.getElementById('bulkMaterial').value, mShape: document.getElementById('bulkMoldedShape').value, sShape: document.getElementById('bulkSimpsonShape').value, fShape: document.getElementById('bulkFlushShape').value, stdCore: document.getElementById('bulkStdCore').value, simpCore: document.getElementById('bulkSimpsonCore').value, hFinish: document.getElementById('bulkHingeFinish').value, hShape: document.getElementById('bulkHingeShape').value, tProf: document.getElementById('bulkTrimProfile').value, tApp: document.getElementById('bulkTrimApp').value };
+            const vals = { margin: document.getElementById('bulkMargin').value, height: document.getElementById('bulkHeight').value, jambSize: document.getElementById('bulkJambSize').value, jambFinish: document.getElementById('bulkJambFinish').value, material: document.getElementById('bulkMaterial').value, hFinish: document.getElementById('bulkHingeFinish').value, hShape: document.getElementById('bulkHingeShape').value, tProf: document.getElementById('bulkTrimProfile').value, tApp: document.getElementById('bulkTrimApp').value };
 
             projectTally.forEach(item => {
                 if (!item.state || item.state.mode === 'misc') return; 
@@ -1594,19 +1618,14 @@
                 if (vals.jambSize) { st.jambSize = vals.jambSize; updates = true; }
                 if (vals.jambFinish) { st.jambFinish = vals.jambFinish; updates = true; }
                 
-                if (vals.material) {
+                if (vals.material && vals.material !== st.material) {
                     st.material = vals.material; updates = true;
-                    if(vals.material === 'Simpson' && (!st.simpsonThickness || !st.simpsonThickness.includes('_'))) st.simpsonThickness = '1-3/8_std';
-                    if(vals.material !== 'Simpson') st.core = 'HC';
-                    if(vals.material === 'Simpson' && !pricingDB.simpson[st.shapeSimpson]) st.shapeSimpson = '1 Panel Shaker';
-                }
-
-                if (st.material !== 'Custom') {
-                    if (st.material === 'Molded' && vals.mShape) { st.shapeMolded = vals.mShape; updates = true; }
-                    if (st.material === 'Simpson' && vals.sShape) { st.shapeSimpson = vals.sShape; updates = true; }
-                    if (st.material === 'Flush' && vals.fShape) { st.shapeFlush = vals.fShape; updates = true; }
-                    if (st.material !== 'Simpson' && vals.stdCore) { st.core = vals.stdCore; updates = true; }
-                    if (st.material === 'Simpson' && vals.simpCore) { st.simpsonThickness = vals.simpCore; updates = true; }
+                    const conf = MATERIAL_CONFIG[st.material];
+                    if (conf) {
+                        st.shape = conf.shapes ? conf.shapes[0].val : (conf.categories ? conf.categories["Solid Shaker"][0].val : st.shape);
+                        if (st.material === 'Simpson') st.simpsonThickness = '1-3/8_std';
+                        else st.core = 'HC';
+                    }
                 }
 
                 if (vals.hFinish) { st.hingeFinish = vals.hFinish; updates = true; }
@@ -1625,7 +1644,7 @@
 
             if (updates) {
                 saveTally(); 
-                ['bulkMargin', 'bulkHeight', 'bulkJambSize', 'bulkJambFinish', 'bulkMaterial', 'bulkMoldedShape', 'bulkSimpsonShape', 'bulkFlushShape', 'bulkStdCore', 'bulkSimpsonCore', 'bulkHingeFinish', 'bulkHingeShape', 'bulkTrimProfile', 'bulkTrimApp'].forEach(id => document.getElementById(id).value = "");
+                ['bulkMargin', 'bulkHeight', 'bulkJambSize', 'bulkJambFinish', 'bulkMaterial', 'bulkHingeFinish', 'bulkHingeShape', 'bulkTrimProfile', 'bulkTrimApp'].forEach(id => document.getElementById(id).value = "");
                 showToast("Project Bulk Updated!");
             }
             closeBulkModal();
