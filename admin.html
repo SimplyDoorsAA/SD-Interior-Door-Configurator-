@@ -30,7 +30,6 @@
         select, input[type="password"], input[type="text"], input[type="number"] { width: 100%; padding: 10px; background: var(--brand-bg); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; outline: none; }
         select:focus, input:focus { border-color: var(--brand-primary); }
         
-        /* Custom Checkbox for Remember Me */
         input[type="checkbox"] { width: auto; transform: scale(1.2); accent-color: var(--brand-primary); cursor: pointer; }
 
         .btn-primary { background: var(--brand-primary); color: white; border: none; padding: 12px 20px; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; text-transform: uppercase;}
@@ -118,13 +117,12 @@
         let fullLiveDatabase = null;
         let currentFileSha = null;
 
-        // Auto-Load Sequence
         document.addEventListener('DOMContentLoaded', () => {
             const savedToken = localStorage.getItem('sd_github_token');
             if (savedToken) {
                 document.getElementById('githubToken').value = savedToken;
                 document.getElementById('rememberMe').checked = true;
-                fetchLiveDatabase(); // Seamless login
+                fetchLiveDatabase(); 
             }
         });
 
@@ -139,7 +137,6 @@
             document.getElementById('rememberMe').checked = false;
             document.getElementById('logoutBtn').style.display = 'none';
             
-            // Lock down UI
             document.getElementById('editorPanel').style.opacity = '0.3';
             document.getElementById('editorPanel').style.pointerEvents = 'none';
             document.getElementById('publishPanel').style.display = 'none';
@@ -159,7 +156,6 @@
                 const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
                 if (!res.ok) throw new Error("Connection failed. Check your token.");
                 
-                // Connection successful: Handle Memory
                 if (document.getElementById('rememberMe').checked) {
                     localStorage.setItem('sd_github_token', token);
                 } else {
@@ -188,7 +184,6 @@
             const body = document.getElementById('tableBody');
             head.innerHTML = ''; body.innerHTML = '';
             
-            // Toggle Auto-Fill button visibility
             document.getElementById('seedAddersBtn').style.display = (type === 'productionAdders') ? 'inline-block' : 'none';
 
             let db = fullLiveDatabase[type];
@@ -217,29 +212,28 @@
             } else if (type === 'pricingDB') {
                 head.innerHTML = `<tr><th>Material</th><th>Shape</th><th>Height</th><th>Core</th><th>Width</th><th>Tier 1</th><th>Tier 2</th><th>Tier 3</th><th>Action</th></tr>`;
                 if (db) {
-                    for (let mat in db) {
-                        if (mat.includes('simpson')) {
-                            for (let sh in db[mat]) {
-                                for (let ht in db[mat][sh]) {
-                                    for (let cr in db[mat][sh][ht]) {
-                                        for (let wd in db[mat][sh][ht][cr]) {
-                                            let t = db[mat][sh][ht][cr][wd];
-                                            appendRow([mat, sh, ht, cr, wd, t[0], t[1], t[2]]);
+                    const processPricing = (matKey, isSimpson, dataObj) => {
+                        for (let a in dataObj) {
+                            if (isSimpson) { 
+                                for (let ht in dataObj[a]) {
+                                    for (let cr in dataObj[a][ht]) {
+                                        for (let wd in dataObj[a][ht][cr]) {
+                                            let t = dataObj[a][ht][cr][wd];
+                                            appendRow([matKey, a, ht, cr, wd, t[0], t[1], t[2]]);
                                         }
                                     }
                                 }
-                            }
-                        } else {
-                            for (let ht in db[mat]) {
-                                for (let cr in db[mat][ht]) {
-                                    for (let wd in db[mat][ht][cr]) {
-                                        let t = db[mat][ht][cr][wd];
-                                        appendRow([mat, "", ht, cr, wd, t[0], t[1], t[2]]);
+                            } else { 
+                                for (let cr in dataObj[a]) {
+                                    for (let wd in dataObj[a][cr]) {
+                                        let t = dataObj[a][cr][wd];
+                                        appendRow([matKey, "", a, cr, wd, t[0], t[1], t[2]]);
                                     }
                                 }
                             }
                         }
-                    }
+                    };
+                    for (let mat in db) processPricing(mat, mat.includes('simpson'), db[mat]);
                 }
             }
         }
@@ -319,16 +313,19 @@
                     const i = r.querySelectorAll('input');
                     const [mat, sh, ht, cr, wd, t1, t2, t3] = Array.from(i).map(x => x.value.trim());
                     if (!mat || !ht || !wd) return;
-                    if (!obj[mat]) obj[mat] = {};
+                    
+                    const tArr = [parseFloat(t1)||0, parseFloat(t2)||0, parseFloat(t3)||0];
+                    obj[mat] = obj[mat] || {};
+                    
                     if (mat.includes('simpson')) {
-                        if (!obj[mat][sh]) obj[mat][sh] = {};
-                        if (!obj[mat][sh][ht]) obj[mat][sh][ht] = {};
-                        if (!obj[mat][sh][ht][cr]) obj[mat][sh][ht][cr] = {};
-                        obj[mat][sh][ht][cr][wd] = [parseFloat(t1)||0, parseFloat(t2)||0, parseFloat(t3)||0];
+                        obj[mat][sh] = obj[mat][sh] || {};
+                        obj[mat][sh][ht] = obj[mat][sh][ht] || {};
+                        obj[mat][sh][ht][cr] = obj[mat][sh][ht][cr] || {};
+                        obj[mat][sh][ht][cr][wd] = tArr;
                     } else {
-                        if (!obj[mat][ht]) obj[mat][ht] = {};
-                        if (!obj[mat][ht][cr]) obj[mat][ht][cr] = {};
-                        obj[mat][ht][cr][wd] = [parseFloat(t1)||0, parseFloat(t2)||0, parseFloat(t3)||0];
+                        obj[mat][ht] = obj[mat][ht] || {};
+                        obj[mat][ht][cr] = obj[mat][ht][cr] || {};
+                        obj[mat][ht][cr][wd] = tArr;
                     }
                 });
                 return obj;
