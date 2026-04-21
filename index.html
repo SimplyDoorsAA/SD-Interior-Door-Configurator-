@@ -195,8 +195,8 @@
         .full-quote-view { max-width: 1200px; margin: 40px auto; padding: 0 20px; display: none; }
         .quote-card { background: white; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .quote-header { background: var(--brand-dark); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .quote-tabs { display: flex; background: #1e293b; padding: 10px 20px 0; gap: 5px; }
-        .quote-tab-btn { background: rgba(255,255,255,0.1); border: none; color: #cbd5e1; padding: 12px 25px; font-weight: 600; border-radius: 8px 8px 0 0; cursor: pointer; transition: 0.2s;}
+        .quote-tabs { display: flex; background: #1e293b; padding: 10px 20px 0; gap: 5px; overflow-x: auto;}
+        .quote-tab-btn { background: rgba(255,255,255,0.1); border: none; color: #cbd5e1; padding: 12px 25px; font-weight: 600; border-radius: 8px 8px 0 0; cursor: pointer; transition: 0.2s; white-space: nowrap;}
         .quote-tab-btn.active { background: white; color: var(--brand-dark); }
         .quote-content { padding: 30px; }
         
@@ -232,8 +232,17 @@
         .labor-metric-title { font-size: 0.9rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         .labor-metric-val { font-size: 2.5rem; font-weight: 900; color: var(--brand-accent); line-height: 1.2; }
 
-        /* Print Media Query */
+        /* --- DOOR LABELS 4x6 CSS --- */
+        .labels-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; background: #f1f5f9; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .label-card { width: 4in; height: 6in; background: white; border: 1px solid #cbd5e1; padding: 0.25in; box-sizing: border-box; display: flex; flex-direction: column; color: black; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin: 0 auto; overflow: hidden; position: relative; }
+        .label-header { font-size: 1.3rem; font-weight: 900; border-bottom: 2px solid black; padding-bottom: 5px; margin-bottom: 10px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+        .label-section { margin-bottom: 0.15in; line-height: 1.3; font-size: 0.85rem; }
+        .label-section-title { font-weight: bold; text-decoration: underline; margin-bottom: 2px; }
+        .label-footer { margin-top: auto; padding-top: 0.1in; border-top: 1px dashed black; font-size: 0.8rem; line-height: 1.4; }
+
+        /* Global Print Media Query */
         @media print {
+            /* Basic Ticket Print settings */
             @page { size: letter portrait; margin: 0.5in; }
             body { background: white; padding: 0; }
             .brand-header, .sidebar-cart, .config-panel, .quote-tabs, .quote-header, .nav-controls, .modal-overlay, #toast { display: none !important; }
@@ -241,25 +250,32 @@
             .layout-wrapper { display: block; margin: 0; padding: 0; }
             .full-quote-view { display: block !important; margin: 0; padding: 0; max-width: 100%; border: none; box-shadow: none; }
             .quote-card { border: none; box-shadow: none; }
-            #contentCustomer, #contentProduction, #contentLabor { display: none !important; }
-            #contentTicket { display: block !important; padding: 0; }
+            #contentCustomer, #contentProduction, #contentLabor, #contentLabels { display: none !important; }
             
-            /* Single Print Logic */
-            body.single-print-mode .ticket-card:not(.print-active) { display: none !important; }
-            body.single-print-mode .ticket-card.print-active { display: block !important; page-break-after: auto; margin-bottom: 0; border: none; padding: 0; }
-
-            /* Stronger print protections for bleeding elements */
+            /* Ticket Print Logic */
+            body:not(.label-print-mode) #contentTicket { display: block !important; padding: 0; }
+            body:not(.label-print-mode).single-print-mode .ticket-card:not(.print-active) { display: none !important; }
+            body:not(.label-print-mode).single-print-mode .ticket-card.print-active { display: block !important; page-break-after: auto; margin-bottom: 0; border: none; padding: 0; }
+            
+            /* Stronger print protections for bleeding elements (Tickets) */
             .ticket-card { border: 3px solid black; margin-bottom: 30px; page-break-inside: avoid !important; break-inside: avoid !important; box-shadow: none; display: block; }
             .ticket-qty { background: black !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .ticket-header { border-bottom: 3px solid black; align-items: center; }
             .ticket-services { border: 3px dashed black; background: transparent; page-break-inside: avoid !important; break-inside: avoid !important; }
             .ticket-services-title, .ticket-services-list { color: black; }
             .ticket-spec-box { background: transparent; border: 2px solid black; }
-            
-            /* CSS Doors in Print */
             .css-door, .css-panel, .door-slab { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .ticket-visual-container { border-color: black !important; background: white !important; }
             .door-knob { background: black !important; }
+
+            /* 4x6 LABEL PRINT LOGIC OVERRIDES */
+            body.label-print-mode .full-quote-view { display: block !important; margin: 0; padding: 0; max-width: none; border: none; box-shadow: none; }
+            body.label-print-mode .quote-content { padding: 0 !important; }
+            body.label-print-mode #contentLabels { display: block !important; }
+            body.label-print-mode .labels-grid { display: block !important; gap: 0 !important; background: white !important; border: none !important; padding: 0 !important; }
+            body.label-print-mode .label-card { width: 4in !important; height: 6in !important; margin: 0 !important; padding: 0.25in !important; border: none !important; box-shadow: none !important; page-break-after: always; break-after: page; }
+            body.label-print-mode.single-print-mode .label-card:not(.print-active) { display: none !important; }
+            body.label-print-mode .flex-end { display: none !important; }
         }
 
         @media (max-width: 1200px) {
@@ -281,10 +297,27 @@
     <div class="modal-overlay" id="bulkModal">
         <div class="modal-card">
             <div class="modal-header">
-                <span>Project Bulk Updates</span>
+                <span>Project Settings & Updates</span>
                 <button class="modal-close" onclick="closeBulkModal()">&times;</button>
             </div>
             <div class="modal-body">
+                
+                <div class="grid-2 mb-20" style="border-bottom: 2px dashed var(--border-color); padding-bottom: 20px;">
+                    <div class="modal-section-title">Project Details (For Labels)</div>
+                    <div class="input-group">
+                        <label>Customer Name</label>
+                        <input type="text" id="metaCustomer" placeholder="e.g., Signature Homes">
+                    </div>
+                    <div class="input-group">
+                        <label>Job Number</label>
+                        <input type="text" id="metaJob" placeholder="e.g., 10236417844">
+                    </div>
+                    <div class="input-group" style="grid-column: 1 / -1;">
+                        <label>Project Location</label>
+                        <input type="text" id="metaLocation" placeholder="e.g., 1981 Pinotage New Braunfels">
+                    </div>
+                </div>
+
                 <p class="text-md m-0 mb-20 text-main">Use the fields below to universally override attributes across all doors in the cart. <em>Note: Custom Write-In products will ignore Shape/Core overrides.</em></p>
                 
                 <div class="grid-2 mb-20">
@@ -380,7 +413,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="closeBulkModal()">Cancel</button>
-                <button class="btn-save" onclick="applyBulkUpdates()">Apply Updates to All Doors</button>
+                <button class="btn-save" onclick="applyBulkUpdates()">Apply Updates & Save</button>
             </div>
         </div>
     </div>
@@ -393,7 +426,8 @@
             <div class="quote-tabs">
                 <button class="quote-tab-btn active" id="tabCustomer" onclick="switchQuoteTab('customer')">Customer Facing Quote</button>
                 <button class="quote-tab-btn" id="tabProduction" onclick="switchQuoteTab('production')">Production BOM (Materials)</button>
-                <button class="quote-tab-btn" id="tabTicket" onclick="switchQuoteTab('ticket')">Production Ticket</button>
+                <button class="quote-tab-btn" id="tabTicket" onclick="switchQuoteTab('ticket')">Production Tickets</button>
+                <button class="quote-tab-btn" id="tabLabels" onclick="switchQuoteTab('labels')">Door Labels</button>
                 <button class="quote-tab-btn" id="tabLabor" onclick="switchQuoteTab('labor')">Labor Points (Scheduling)</button>
             </div>
             
@@ -451,7 +485,22 @@
                 </div>
                 
                 <div id="ticketContainer">
+                </div>
+            </div>
+
+            <div class="quote-content hidden" id="contentLabels">
+                <div class="flex-end mb-20">
+                    <div>
+                        <h3 class="m-0 text-dark">Production Door Labels (4x6)</h3>
+                        <p class="mt-5 mb-0 text-sm text-muted">Auto-sequenced tags for staging and shipping.</p>
                     </div>
+                    <div class="text-right">
+                        <button class="btn-copy-all" onclick="printAllLabels()">🖨️ Print All Labels</button>
+                    </div>
+                </div>
+                
+                <div class="labels-grid" id="labelsContainer">
+                </div>
             </div>
 
             <div class="quote-content hidden" id="contentLabor">
@@ -1007,6 +1056,7 @@
         
         let appState = {};
         let projectTally = [];
+        let projectMeta = { customerName: "", jobNumber: "", location: "" };
         let viewMode = 'configurator'; 
         let currentQuoteData = null;
         let editingIndex = null;
@@ -1659,6 +1709,8 @@
                         return item;
                     }).filter(item => item.config !== undefined);
                 }
+                const storedMeta = localStorage.getItem('sd_projectMeta');
+                if (storedMeta) projectMeta = JSON.parse(storedMeta);
             } catch(e){}
             renderSidebar();
         }
@@ -1708,7 +1760,8 @@
                 const confirmClear = confirm("Are you sure you want to clear the current quote? All unsaved progress will be lost.");
                 if (!confirmClear) return;
             }
-            projectTally = []; saveTally(); 
+            projectTally = []; projectMeta = { customerName: "", jobNumber: "", location: "" };
+            saveTally(); 
             if (editingIndex !== null) cancelEdit();
             resetConfigurator();
             if (viewMode === 'fullquote') toggleFullQuote();
@@ -1756,10 +1809,11 @@
         function moveItemDown(i) { if (i >= projectTally.length - 1) return; const t = projectTally[i]; projectTally[i] = projectTally[i + 1]; projectTally[i + 1] = t; saveTally(); }
 
         // Save/Load
-        function saveTally() { localStorage.setItem('sd_projectTally', JSON.stringify(projectTally)); renderSidebar(); }
+        function saveTally() { localStorage.setItem('sd_projectTally', JSON.stringify(projectTally)); localStorage.setItem('sd_projectMeta', JSON.stringify(projectMeta)); renderSidebar(); }
         function exportProject() {
             if (projectTally.length === 0) return alert("Your cart is empty. There is nothing to save.");
-            const blob = new Blob([JSON.stringify(projectTally, null, 2)], { type: "application/json" });
+            const exportData = { tally: projectTally, meta: projectMeta };
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url;
             const d = new Date(); a.download = `SimplyDoors-Quote-${d.getFullYear()}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getDate().toString().padStart(2,'0')}.json`;
@@ -1771,8 +1825,13 @@
             reader.onload = function(e) {
                 try {
                     const importedData = JSON.parse(e.target.result);
-                    if (!Array.isArray(importedData)) throw new Error("Invalid format");
-                    projectTally = projectTally.length > 0 ? (confirm("Append loaded project? Cancel to overwrite.") ? projectTally.concat(importedData) : importedData) : importedData;
+                    if (importedData.tally && importedData.meta) {
+                        projectTally = projectTally.length > 0 ? (confirm("Append loaded project? Cancel to overwrite.") ? projectTally.concat(importedData.tally) : importedData.tally) : importedData.tally;
+                        projectMeta = importedData.meta;
+                    } else if (Array.isArray(importedData)) {
+                        // Legacy support
+                        projectTally = projectTally.length > 0 ? (confirm("Append loaded project? Cancel to overwrite.") ? projectTally.concat(importedData) : importedData) : importedData;
+                    } else throw new Error("Invalid format");
                     loadTally(); showToast("Project Loaded Successfully!");
                 } catch (error) { alert("Error loading project file."); }
                 event.target.value = ""; 
@@ -1781,10 +1840,27 @@
         }
 
         // Bulk Modal Logic
-        function openBulkModal() { document.getElementById('bulkModal').style.display = 'flex'; }
+        function openBulkModal() { 
+            document.getElementById('metaCustomer').value = projectMeta.customerName || "";
+            document.getElementById('metaJob').value = projectMeta.jobNumber || "";
+            document.getElementById('metaLocation').value = projectMeta.location || "";
+            document.getElementById('bulkModal').style.display = 'flex'; 
+        }
         function closeBulkModal() { document.getElementById('bulkModal').style.display = 'none'; }
         function applyBulkUpdates() {
             let updates = false;
+            
+            const newCust = document.getElementById('metaCustomer').value;
+            const newJob = document.getElementById('metaJob').value;
+            const newLoc = document.getElementById('metaLocation').value;
+            
+            if(projectMeta.customerName !== newCust || projectMeta.jobNumber !== newJob || projectMeta.location !== newLoc) {
+                projectMeta.customerName = newCust;
+                projectMeta.jobNumber = newJob;
+                projectMeta.location = newLoc;
+                updates = true;
+            }
+
             const vals = { margin: document.getElementById('bulkMargin').value, height: document.getElementById('bulkHeight').value, jambSize: document.getElementById('bulkJambSize').value, jambFinish: document.getElementById('bulkJambFinish').value, material: document.getElementById('bulkMaterial').value, hFinish: document.getElementById('bulkHingeFinish').value, hShape: document.getElementById('bulkHingeShape').value, tProf: document.getElementById('bulkTrimProfile').value, tApp: document.getElementById('bulkTrimApp').value };
 
             projectTally.forEach(item => {
@@ -1822,7 +1898,7 @@
             if (updates) {
                 saveTally(); 
                 ['bulkMargin', 'bulkHeight', 'bulkJambSize', 'bulkJambFinish', 'bulkMaterial', 'bulkHingeFinish', 'bulkHingeShape', 'bulkTrimProfile', 'bulkTrimApp'].forEach(id => document.getElementById(id).value = "");
-                showToast("Project Bulk Updated!");
+                showToast("Project Data Updated!");
             }
             closeBulkModal();
         }
@@ -1840,11 +1916,13 @@
             document.getElementById('tabCustomer').classList.toggle('active', name === 'customer'); 
             document.getElementById('tabProduction').classList.toggle('active', name === 'production');
             document.getElementById('tabTicket').classList.toggle('active', name === 'ticket');
+            document.getElementById('tabLabels').classList.toggle('active', name === 'labels');
             document.getElementById('tabLabor').classList.toggle('active', name === 'labor');
             
             document.getElementById('contentCustomer').classList.toggle('hidden', name !== 'customer'); 
             document.getElementById('contentProduction').classList.toggle('hidden', name !== 'production');
             document.getElementById('contentTicket').classList.toggle('hidden', name !== 'ticket');
+            document.getElementById('contentLabels').classList.toggle('hidden', name !== 'labels');
             document.getElementById('contentLabor').classList.toggle('hidden', name !== 'labor');
         }
 
@@ -1933,6 +2011,10 @@
             return svg;
         }
 
+        // ==========================================
+        // PRINTER ENGINES (Tickets & Labels)
+        // ==========================================
+
         function printSingleTicket(idx) {
             const ticket = document.getElementById('ticket-' + idx);
             if (!ticket) return;
@@ -1945,20 +2027,59 @@
             ticket.classList.remove('print-active');
         }
 
+        function printLabels(singleId = null) {
+            // Inject dynamic 4x6 page CSS specifically for labels
+            const style = document.createElement('style');
+            style.id = 'print-page-size';
+            style.innerHTML = '@page { size: 4in 6in; margin: 0; }';
+            document.head.appendChild(style);
+            
+            document.body.classList.add('label-print-mode');
+            
+            if (singleId) {
+                document.body.classList.add('single-print-mode');
+                document.getElementById(singleId).classList.add('print-active');
+            }
+            
+            window.print();
+            
+            // Clean up
+            document.body.classList.remove('label-print-mode');
+            if (singleId) {
+                document.body.classList.remove('single-print-mode');
+                document.getElementById(singleId).classList.remove('print-active');
+            }
+            document.head.removeChild(style);
+        }
+
+        function printAllLabels() {
+            printLabels();
+        }
+
+        function printSingleLabel(itemIndex, qtySequence) {
+            printLabels(`label-${itemIndex}-${qtySequence}`);
+        }
+
+        // ==========================================
+        // FULL QUOTE RENDERING
+        // ==========================================
+
         function renderFullQuote() {
             const cTb = document.querySelector('#customerTable tbody');
             const pTb = document.querySelector('#productionTable tbody');
             const tCont = document.getElementById('ticketContainer');
+            const lCont = document.getElementById('labelsContainer');
             const lAggTb = document.querySelector('#laborAggregateTable tbody');
             const lRoomTb = document.querySelector('#laborRoomTable tbody');
             
-            cTb.innerHTML = ''; pTb.innerHTML = ''; tCont.innerHTML = ''; lAggTb.innerHTML = ''; lRoomTb.innerHTML = '';
+            cTb.innerHTML = ''; pTb.innerHTML = ''; tCont.innerHTML = ''; lCont.innerHTML = ''; lAggTb.innerHTML = ''; lRoomTb.innerHTML = '';
             window.currentBOMData = {};
 
             if (projectTally.length === 0) { 
                 cTb.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">No items configured yet.</td></tr>`; 
                 pTb.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:30px; color:var(--text-muted);">No materials to order.</td></tr>`; 
                 tCont.innerHTML = `<div class="text-center text-muted" style="padding: 40px;">No production tickets to generate.</div>`;
+                lCont.innerHTML = `<div class="text-center text-muted w-full" style="padding: 40px;">No labels to generate.</div>`;
                 lAggTb.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:30px; color:var(--text-muted);">No labor data.</td></tr>`; 
                 lRoomTb.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:var(--text-muted);">No room data.</td></tr>`; 
                 document.getElementById('fullQuoteGrandTotal').innerText = "$0.00"; 
@@ -1969,6 +2090,7 @@
 
             let gTot = 0, aggBOM = {};
             let tHtml = '';
+            let labelHtml = '';
             let totalLaborPts = 0;
             let laborAggregate = {};
 
@@ -1980,7 +2102,6 @@
                 gTot += gen.price;
                 totalLaborPts += gen.laborPoints;
 
-                // --- GENERATE VISUALS FOR PROPOSAL AND TICKETS ---
                 const conf = item.config;
                 let swingDiagram = generateSwingDiagram(conf.handing, conf.mode);
                 const matConf = MATERIAL_CONFIG[conf.material] || MATERIAL_CONFIG['Molded'];
@@ -2051,10 +2172,28 @@
                     </tr>`;
                 }
 
-                // 4. Generate Production Ticket
-                let typeStr = conf.mode === 'double' ? "Double Door" : (conf.mode === 'bifold' ? "Bifold" : (conf.mode === 'slab_only' ? "Slab Only" : (conf.mode === 'cased_opening' ? "Cased Opening" : (conf.mode === 'misc' ? "Misc Item" : "Single Door"))));
+                // Strings for Tickets & Labels
+                let isDouble = conf.mode === 'double';
+                let typeStr = isDouble ? "Double Door" : (conf.mode === 'bifold' ? "Bifold Door" : (conf.mode === 'slab_only' ? "Slab Only" : (conf.mode === 'cased_opening' ? "Cased Opening" : (conf.mode === 'misc' ? "Misc Item" : "Single Door"))));
                 let dimStr = conf.material === 'Custom' ? `${conf.customW}" x ${conf.customH}"` : `${conf.width} x ${conf.height === '68' ? "6'8\"" : (conf.height === '70' ? "7'0\"" : "8'0\"")}`;
+                let coreDisplay = conf.core === 'HC' ? 'Hollow Core' : (conf.core === 'SC' ? 'Solid Core' : conf.core);
+                let designStr = conf.material === 'Custom' ? (conf.customDesc || "Custom") : `${coreDisplay} ${conf.shape}`;
+                let slabStr = conf.material === 'Custom' ? (conf.customDesc || "Custom Slab") : (conf.mode === 'cased_opening' ? 'N/A' : `${conf.material} - ${conf.shape} <br><span class="text-lg text-muted">Core: ${coreDisplay}</span><br><span class="text-lg text-muted">SKU: ${conf.skuBase}</span>`);
+                let frameStr = conf.mode === 'slab_only' || conf.mode === 'misc' ? 'N/A' : `${conf.jambSize} ${conf.jambFinish === 'white_oak' ? 'White Oak' : (conf.jambFinish === 'primed' ? 'Primed FJ Pine' : 'Raw FJ Pine')} Jamb <br> <span class="text-lg text-muted">${conf.jambFinish === 'white_oak' ? 'White Oak' : (conf.jambFinish === 'primed' ? 'Primed' : 'Raw')} Stop Applied</span>`;
+                let frameStrLabel = conf.mode === 'slab_only' || conf.mode === 'misc' ? 'N/A' : `${conf.jambSize} ${conf.jambFinish === 'white_oak' ? 'White Oak' : (conf.jambFinish === 'primed' ? 'Primed FJ Pine' : 'Raw FJ Pine')} Flat Jamb<br>${conf.jambFinish === 'white_oak' ? 'White Oak' : (conf.jambFinish === 'primed' ? 'Primed' : 'Raw')} Stop Applied`;
                 
+                let hwStr = 'N/A';
+                let hwStrLabel = 'N/A';
+                if (conf.mode !== 'misc' && conf.mode !== 'cased_opening' && conf.mode !== 'slab_only') {
+                    hwStr = `${conf.activeBore} <br> <span class="text-lg text-muted">${conf.hingeFinish} <br>(${conf.hingeShape.replace(' Hinge Shape', '')})</span>`;
+                    hwStrLabel = `Active Bore: ${conf.activeBore}<br>${conf.hingeFinish} ${conf.hingeShape.replace(' Hinge Shape', '')}`;
+                    if(isDouble) {
+                        hwStr += `<br><span class="text-lg text-brand mt-10" style="display:block;">Double HW: ${conf.handing !== 'No Hand' ? 'Astragal + Flush Bolt' : 'Ball Catch'}</span>`;
+                        hwStrLabel += `<br>Double HW: ${conf.handing !== 'No Hand' ? 'Astragal + Flush Bolt' : 'Ball Catch'}`;
+                    }
+                }
+
+                // 4. Generate Production Ticket
                 let servicesHtml = '';
                 if (conf.services && conf.services.length > 0) {
                     servicesHtml = `
@@ -2064,17 +2203,6 @@
                             ${conf.services.map(s => `<li>${s.name}</li>`).join('')}
                         </ul>
                     </div>`;
-                }
-
-                let coreDisplay = conf.core === 'HC' ? 'Hollow Core' : (conf.core === 'SC' ? 'Solid Core' : conf.core);
-                let slabStr = conf.material === 'Custom' ? (conf.customDesc || "Custom Slab") : (conf.mode === 'cased_opening' ? 'N/A' : `${conf.material} - ${conf.shape} <br><span class="text-lg text-muted">Core: ${coreDisplay}</span><br><span class="text-lg text-muted">SKU: ${conf.skuBase}</span>`);
-                
-                let frameStr = conf.mode === 'slab_only' || conf.mode === 'misc' ? 'N/A' : `${conf.jambSize} ${conf.jambFinish === 'white_oak' ? 'White Oak' : (conf.jambFinish === 'primed' ? 'Primed FJ Pine' : 'Raw FJ Pine')} Jamb <br> <span class="text-lg text-muted">${conf.jambFinish === 'white_oak' ? 'White Oak' : (conf.jambFinish === 'primed' ? 'Primed' : 'Raw')} Stop Applied</span>`;
-                
-                let hwStr = 'N/A';
-                if (conf.mode !== 'misc' && conf.mode !== 'cased_opening' && conf.mode !== 'slab_only') {
-                    hwStr = `${conf.activeBore} <br> <span class="text-lg text-muted">${conf.hingeFinish} <br>(${conf.hingeShape.replace(' Hinge Shape', '')})</span>`;
-                    if(conf.mode === 'double') hwStr += `<br><span class="text-lg text-brand mt-10" style="display:block;">Double HW: ${conf.handing !== 'No Hand' ? 'Astragal + Flush Bolt' : 'Ball Catch'}</span>`;
                 }
 
                 tHtml += `
@@ -2088,11 +2216,9 @@
                     </div>
                     
                     <div style="display: flex; margin-bottom: 20px; gap: 20px; align-items: stretch;">
-                        
                         <div class="ticket-visual-container">
                             ${visualHTML}
                         </div>
-
                         <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
                             <div class="ticket-specs" style="margin: 0;">
                                 <div class="ticket-spec-box">
@@ -2132,9 +2258,62 @@
                     
                     ${servicesHtml}
                 </div>`;
+
+                // 5. Generate Door Labels (Sequence loop: 1 of X)
+                for(let q = 1; q <= item.qty; q++) {
+                    labelHtml += `
+                    <div class="label-card" id="label-${i}-${q}">
+                        <div class="label-header">
+                            <span style="color: var(--brand-dark);">Simply<span style="color: var(--brand-primary);">Doors</span></span>
+                            <button class="btn-print-single" onclick="printSingleLabel(${i}, ${q})" style="color:black; border: 1px solid black; background: #f8fafc; font-size:0.6rem; padding: 2px 6px; cursor:pointer;">Print</button>
+                        </div>
+                        
+                        <div class="label-section">
+                            <span style="font-weight:900; font-size:0.95rem;">Item: ${item.room || "None Assigned"}</span>
+                        </div>
+                        
+                        <div class="label-section">
+                            <div class="label-section-title">Details:</div>
+                            ${typeStr}<br>
+                            ${dimStr}<br>
+                            ${conf.handing !== 'No Hand' ? conf.handing : ''}
+                        </div>
+
+                        <div class="label-section">
+                            <div class="label-section-title">Door Design: ${conf.material}</div>
+                            ${conf.skuBase}<br>
+                            ${designStr}
+                        </div>
+
+                        ${conf.mode !== 'misc' && conf.mode !== 'slab_only' ? `
+                        <div class="label-section">
+                            <div class="label-section-title">Frame & Trim:</div>
+                            ${frameStrLabel}
+                        </div>` : ''}
+
+                        ${conf.mode !== 'misc' && conf.mode !== 'slab_only' && conf.mode !== 'cased_opening' ? `
+                        <div class="label-section">
+                            <div class="label-section-title">Bore, Hinge, & Hardware:</div>
+                            ${hwStrLabel}
+                        </div>` : ''}
+
+                        ${conf.services.length > 0 ? `
+                        <div class="label-section">
+                            <div class="label-section-title">Services & Adders:</div>
+                            ${conf.services.map(s=>s.name).join('<br>')}
+                        </div>` : ''}
+
+                        <div class="label-footer">
+                            <strong style="font-size: 0.95rem; text-transform: uppercase;">Qty: ${q} of ${item.qty}</strong><br>
+                            ${projectMeta.jobNumber ? `Job #: ${projectMeta.jobNumber}<br>` : ''}
+                            ${projectMeta.customerName ? `Customer: ${projectMeta.customerName}<br>` : ''}
+                            ${projectMeta.location ? `Location: ${projectMeta.location}<br>` : ''}
+                        </div>
+                    </div>`;
+                }
             });
 
-            // 5. Update UI Metrics
+            // 6. Update UI Metrics
             document.getElementById('fullQuoteGrandTotal').innerText = "$" + gTot.toFixed(2);
             document.getElementById('laborTotalPoints').innerText = totalLaborPts;
             
@@ -2166,6 +2345,7 @@
             }
 
             tCont.innerHTML = tHtml;
+            lCont.innerHTML = labelHtml;
         }
 
         // ==========================================
