@@ -2423,47 +2423,58 @@
   "productionAdders": [
     {
       "name": "Slab Cutdown",
-      "cost": 10
+      "cost": 10,
+      "points": 0
     },
     {
       "name": "Prehang 6'8 Single (Std 4-9/16)",
-      "cost": 25
+      "cost": 25,
+      "points": 0
     },
     {
       "name": "Prehang 8'0 Single (Std 4-9/16)",
-      "cost": 32
+      "cost": 32,
+      "points": 0
     },
     {
       "name": "Upcharge to Interior 6-9/16 Jamb",
-      "cost": 20
+      "cost": 20,
+      "points": 0
     },
     {
       "name": "Prehang 6'8 Double Ball Catch",
-      "cost": 55
+      "cost": 55,
+      "points": 0
     },
     {
       "name": "Prehang 6'8 Double Flush Bolt",
-      "cost": 85
+      "cost": 85,
+      "points": 0
     },
     {
       "name": "Prehang 8'0 Double Flush Bolt",
-      "cost": 95
+      "cost": 95,
+      "points": 0
     },
     {
       "name": "Prehang 8'0 Double Ball Catch",
-      "cost": 50
+      "cost": 50,
+      "points": 0
     },
     {
       "name": "Upcharge to Primed FJ Jamb",
-      "cost": 5
+      "cost": 5,
+      "points": 0
     },
     {
       "name": "Hinge Prep (Per Slab)",
-      "cost": 30
+      "cost": 30,
+      "points": 0
     },
     {
       "name": "Bore Prep (Per Slab)",
-      "cost": 20
+      "cost": 20,
+      "points": 0
     }
   ],
   "systemConstants": {
